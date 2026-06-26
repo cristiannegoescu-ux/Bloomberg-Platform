@@ -1,0 +1,13 @@
+{
+  "name": "bloomberg-platform",
+  "version": "1.0.0",
+  "description": "Bloomberg Reporter Platform — Director Vision Site",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pptxgenjs": "^4.0.1"
+  }
+}

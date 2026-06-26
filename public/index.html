@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bloomberg Reporter Platform</title>
+<link rel="icon" type="image/png" href="/platform/Bloomberg_Logo_Black.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg-base:       #0b0f1a;
+    --bg-card:       rgba(22,27,34,0.85);
+    --bg-card-hover: rgba(30,38,54,0.9);
+    --border:        rgba(48,54,68,0.8);
+    --border-accent: rgba(79,142,247,0.4);
+    --text-primary:  #e6edf3;
+    --text-secondary:#8b949e;
+    --text-muted:    #484f58;
+    --accent:        #4f8ef7;
+    --accent-dim:    rgba(79,142,247,0.12);
+    --accent-glow:   rgba(79,142,247,0.25);
+    --green:         #3fb950;
+    --amber:         #d29922;
+    --red:           #f85149;
+    --purple:        #c77dff;
+    --cyan:          #58c9da;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BG IMAGE ── */
+  #bg-overlay {
+    position: fixed; inset: 0;
+    background-image: url('/platform/Bloomberg_Imagery_NEUTRAL_159.jpg');
+    background-size: cover; background-position: center;
+    opacity: 0.13; pointer-events: none; z-index: 0;
+  }
+
+  /* ── PASSWORD GATE ── */
+  #gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(11,15,26,0.97);
+    backdrop-filter: blur(18px);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 0;
+  }
+  #gate img.gate-logo { height: 44px; margin-bottom: 32px; opacity: 0.9; }
+  #gate .gate-card {
+    background: rgba(22,27,34,0.95);
+    border: 1px solid rgba(79,142,247,0.3);
+    border-radius: 16px;
+    padding: 40px 48px;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 0 60px rgba(79,142,247,0.12), 0 24px 48px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+  #gate .gate-icon { font-size: 36px; margin-bottom: 16px; }
+  #gate h2 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; letter-spacing: 0.01em; }
+  #gate p  { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.6; }
+  #gate input {
+    width: 100%; padding: 12px 16px; font-size: 15px; font-family: inherit;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-primary); outline: none;
+    text-align: center; letter-spacing: 0.12em;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 16px;
+  }
+  #gate input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  #gate input.error { border-color: var(--red); animation: shake 0.35s ease; }
+  #gate button {
+    width: 100%; padding: 13px; font-size: 14px; font-weight: 700; font-family: inherit;
+    background: linear-gradient(135deg, #4f8ef7, #7b6cf7);
+    border: none; border-radius: 8px; color: #fff; cursor: pointer;
+    letter-spacing: 0.04em; transition: opacity 0.15s, transform 0.1s;
+  }
+  #gate button:hover { opacity: 0.9; transform: translateY(-1px); }
+  #gate .gate-error { font-size: 12px; color: var(--red); margin-top: 10px; height: 16px; }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60%  { transform: translateX(-6px); }
+    40%,80%  { transform: translateX(6px); }
+  }
+
+  /* ── LAYOUT ── */
+  html, body { height: 100%; }
+  #app { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+  main { flex: 1; display: flex; flex-direction: column; }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(11,15,26,0.92); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; height: 72px; gap: 32px;
+  }
+  header img.logo { height: 32px; cursor: pointer; flex-shrink: 0; }
+  .header-title {
+    display: flex; align-items: baseline; gap: 8px; flex-shrink: 0;
+  }
+  .header-title .r {
+    font-size: 18px; font-weight: 900; letter-spacing: 0.18em; color: #fff;
+    animation: neon-white 3s ease-in-out infinite;
+  }
+  .header-title .platform-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: var(--cyan);
+    background: rgba(88,201,218,0.1); border: 1px solid rgba(88,201,218,0.3);
+    padding: 2px 9px; border-radius: 10px;
+  }
+  nav { display: flex; gap: 2px; flex: 1; justify-content: center; }
+  nav button {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    color: var(--text-secondary); padding: 8px 18px; cursor: pointer;
+    font-size: 13px; font-weight: 500; font-family: inherit;
+    transition: color 0.15s, border-color 0.15s; white-space: nowrap;
+  }
+  nav button:hover { color: var(--text-primary); }
+  nav button.active {
+    color: var(--text-primary); font-weight: 700;
+    border-bottom-color: var(--accent);
+  }
+  .header-badge {
+    flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 10px; background: rgba(248,81,73,0.12); color: var(--red);
+    border: 1px solid rgba(248,81,73,0.3); letter-spacing: 0.03em;
+    animation: pulse-badge 2s ease-in-out infinite;
+  }
+  @keyframes pulse-badge {
+    0%,100% { opacity: 1; } 50% { opacity: 0.65; }
+  }
+
+  @keyframes neon-white {
+    0%,100% { text-shadow: 0 0 4px #fff, 0 0 10px #fff, 0 0 20px rgba(255,255,255,0.7), 0 0 40px rgba(255,255,255,0.3); }
+    50%      { text-shadow: 0 0 2px #fff, 0 0 6px rgba(255,255,255,0.8), 0 0 14px rgba(255,255,255,0.4); }
+  }
+
+  /* ── MAIN ── */
+  main { padding: 40px 48px; max-width: 1400px; margin: 0 auto; width: 100%; }
+  main.fullscreen {
+    padding: 0; max-width: none; margin: 0;
+    overflow: hidden; flex: 1; display: flex; flex-direction: column;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+  main.fullscreen .page.active {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  }
+  main.fullscreen .page.active .rapp {
+    flex: 1; display: flex; flex-direction: column; min-height: 0;
+  }
+  main.fullscreen .page.active .rapp-body {
+    flex: 1; min-height: 0;
+  }
+  main.fullscreen .page.active .rapp-content {
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
+  }
+  main.fullscreen .page.active .rapp-workspace {
+    flex: 1; min-height: 0;
+  }
+  main.fullscreen #portal-iframe-flex {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  }
+  main.fullscreen #portal-iframe-flex iframe {
+    flex: 1; width: 100%; height: 100%;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-header { margin-bottom: 36px; }
+  .section-header .eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-header .eyebrow::before {
+    content: ''; width: 28px; height: 2px; background: var(--accent); border-radius: 1px;
+  }
+  .section-header h1 {
+    font-size: 38px; font-weight: 900; color: #fff; line-height: 1.12; letter-spacing: -0.01em;
+    margin-bottom: 14px;
+  }
+  .section-header h1 span.highlight { color: var(--accent); }
+  .section-header p {
+    font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 640px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { border-color: var(--border-accent); box-shadow: 0 0 24px rgba(79,142,247,0.08); }
+
+  /* ── STAT GRID ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px 20px; text-align: center;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .stat-card:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+  .stat-card .num {
+    font-size: 42px; font-weight: 900; color: #fff; line-height: 1;
+    margin-bottom: 6px; letter-spacing: -0.02em;
+  }
+  .stat-card .num.accent { color: var(--accent); }
+  .stat-card .num.green  { color: var(--green); }
+  .stat-card .num.amber  { color: var(--amber); }
+  .stat-card .num.red    { color: var(--red); }
+  .stat-card .label { font-size: 12px; color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px;
+    width: 2px; background: linear-gradient(180deg, var(--accent), var(--purple), var(--red));
+    border-radius: 1px;
+  }
+  .timeline-item { position: relative; margin-bottom: 28px; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -24px; top: 5px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg-base);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .timeline-item.done::before  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .timeline-item.warn::before  { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .timeline-item.crit::before  { background: var(--red);   box-shadow: 0 0 8px var(--red); }
+  .timeline-item .year { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.08em; }
+  .timeline-item h4   { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .timeline-item p    { font-size: 12px; color: var(--text-secondary); line-height: 1.55; }
+
+  /* ── PLATFORM PILLARS ── */
+  .pillar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+  .pillar {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 28px 24px; position: relative; overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+  .pillar:hover { border-color: var(--border-accent); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+  .pillar::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--pillar-color, var(--accent));
+  }
+  .pillar .pillar-icon { font-size: 32px; margin-bottom: 14px; }
+  .pillar h3 { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .pillar p  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ── PLATFORM ANALOGY ── */
+  .analogy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+  .analogy-card {
+    background: rgba(79,142,247,0.06); border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 12px; padding: 20px; text-align: center;
+  }
+  .analogy-card .analogy-logo { font-size: 40px; margin-bottom: 10px; }
+  .analogy-card h4 { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .analogy-card p  { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .analogy-arrow { display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--accent); margin: 16px 0; }
+
+  /* ── PORTAL PAGE ── */
+  .portal-layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+  .portal-iframe-wrap {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; position: relative;
+  }
+  .portal-iframe-wrap .iframe-header {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    background: rgba(22,27,34,0.9); border-bottom: 1px solid var(--border);
+  }
+  .portal-iframe-wrap .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .portal-iframe-wrap iframe {
+    width: 100%; height: 640px; border: none; display: block;
+    background: #fff;
+  }
+  .feature-list { display: flex; flex-direction: column; gap: 12px; }
+  .feature-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 18px; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; transition: border-color 0.2s;
+  }
+  .feature-item:hover { border-color: var(--border-accent); }
+  .feature-item .fi-icon {
+    width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0;
+    background: var(--fi-bg, rgba(79,142,247,0.12));
+  }
+  .feature-item h4 { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .feature-item p  { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ── INTEGRATIONS ── */
+  .integration-hero {
+    background: linear-gradient(135deg, rgba(79,142,247,0.08), rgba(199,125,255,0.06));
+    border: 1px solid rgba(79,142,247,0.25); border-radius: 16px;
+    padding: 32px 36px; margin-bottom: 28px; position: relative; overflow: hidden;
+  }
+  .integration-hero::after {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(79,142,247,0.12), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Toggle panel */
+  .intg-panels { display: flex; flex-direction: column; gap: 16px; }
+  .intg-panel {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden;
+  }
+  .intg-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+  }
+  .intg-panel-title {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .intg-panel-count {
+    font-size: 10px; font-weight: 600; color: var(--text-muted);
+  }
+  .intg-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  .intg-row:last-child { border-bottom: none; }
+  .intg-row:hover { background: rgba(255,255,255,0.02); }
+  .intg-row.disabled-row { opacity: 0.55; }
+  .intg-icon {
+    width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .intg-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
+  .intg-info { flex: 1; min-width: 0; }
+  .intg-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+  .intg-desc { font-size: 11px; color: var(--text-secondary); }
+  .intg-status {
+    font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 10px; flex-shrink: 0; white-space: nowrap;
+  }
+  .is-live   { background: rgba(63,185,80,0.12);   color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .is-active { background: rgba(79,142,247,0.12);  color: var(--accent); border: 1px solid rgba(79,142,247,0.3); }
+  .is-beta   { background: rgba(210,153,34,0.12);  color: #d29922;       border: 1px solid rgba(210,153,34,0.3); }
+  .is-config { background: rgba(139,148,158,0.12); color: #8b949e;       border: 1px solid rgba(139,148,158,0.25); }
+
+  /* Toggle switch */
+  .intg-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; cursor: pointer; }
+  .intg-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .intg-slider {
+    position: absolute; inset: 0;
+    background: #1e222c; border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .intg-slider::before {
+    content: '';
+    position: absolute; width: 18px; height: 18px; left: 2px; top: 2px;
+    background: #484c55; border-radius: 50%;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .intg-toggle input:checked + .intg-slider { background: rgba(79,142,247,0.22); border-color: rgba(79,142,247,0.45); }
+  .intg-toggle input:checked + .intg-slider::before {
+    transform: translateX(20px);
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(79,142,247,0.65);
+  }
+
+  /* ── SUBSCRIPTIONS ── */
+  .sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 8px; }
+  .sub-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 32px 28px; display: flex; flex-direction: column; gap: 0;
+    position: relative; overflow: hidden;
+    transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+  }
+  .sub-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.35); }
+  .sub-card.featured {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 40px rgba(79,142,247,0.15);
+  }
+  .sub-card.featured:hover { box-shadow: 0 0 0 1px var(--accent), 0 12px 48px rgba(79,142,247,0.25); }
+  .sub-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--sub-color, var(--border));
+  }
+  .sub-card .featured-tag {
+    position: absolute; top: 16px; right: 16px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+    padding: 3px 10px; border-radius: 10px;
+    background: rgba(79,142,247,0.18); color: var(--accent); border: 1px solid rgba(79,142,247,0.4);
+  }
+
+  /* Vintage logo combo */
+  .vintage-logo-combo {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .vintage-logo-combo img { height: 38px; object-fit: contain; }
+  .vintage-logo-combo .plus { font-size: 18px; color: var(--text-muted); font-weight: 300; }
+
+  .sub-card .sub-logo-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .sub-card .sub-logo-row img.bloomberg-logo { height: 28px; object-fit: contain; }
+
+  .sub-card .plan-name {
+    font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 4px; letter-spacing: -0.01em;
+  }
+  .sub-card .plan-tagline {
+    font-size: 12px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;
+  }
+  .sub-card .plan-divider {
+    height: 1px; background: var(--border); margin: 20px 0;
+  }
+  .sub-card .plan-includes {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 14px;
+  }
+  .sub-card .product-list { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .sub-card .product-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .sub-card .product-row img {
+    width: 36px; height: 36px; border-radius: 8px; object-fit: cover; flex-shrink: 0;
+  }
+  .sub-card .product-row .prod-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .sub-card .product-row .prod-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+  .sub-card .product-row.disabled { opacity: 0.3; filter: grayscale(1); }
+  .sub-card .product-row .prod-check { margin-left: auto; font-size: 13px; flex-shrink: 0; }
+
+  .sub-cta {
+    margin-top: 28px; width: 100%; padding: 13px;
+    border-radius: 9px; font-size: 14px; font-weight: 700; font-family: inherit;
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s; letter-spacing: 0.03em;
+    border: 1px solid transparent;
+  }
+  .sub-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+  .sub-cta.cta-outline {
+    background: transparent; color: var(--text-secondary); border-color: var(--border);
+  }
+  .sub-cta.cta-accent {
+    background: linear-gradient(135deg, #4f8ef7, #7b6cf7); color: #fff; border: none;
+  }
+  .sub-cta.cta-premium {
+    background: linear-gradient(135deg, #c77dff, #7b6cf7, #4f8ef7); color: #fff; border: none;
+  }
+
+  /* ── CALLOUT BOX ── */
+  .callout {
+    padding: 20px 24px; border-radius: 10px; margin-bottom: 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .callout.blue  { background: rgba(79,142,247,0.08);  border: 1px solid rgba(79,142,247,0.25);  }
+  .callout.green { background: rgba(63,185,80,0.07);   border: 1px solid rgba(63,185,80,0.25);   }
+  .callout.amber { background: rgba(210,153,34,0.08);  border: 1px solid rgba(210,153,34,0.25);  }
+  .callout .ci   { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+  .callout h4    { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .callout p     { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ── TWO-COL LAYOUT ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; margin-bottom: 32px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border); padding: 14px 48px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-card); position: relative; z-index: 1; flex-shrink: 0;
+  }
+  footer img { height: 36px; opacity: 0.7; object-fit: contain; }
+  footer p   { font-size: 11px; color: var(--text-muted); }
+
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(79,142,247,0.3); border-radius: 3px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    main { padding: 32px 24px; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .pillar-grid, .sub-grid, .integration-grid { grid-template-columns: 1fr 1fr; }
+    .portal-layout { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    nav button { padding: 8px 10px; font-size: 12px; }
+    .stat-grid  { grid-template-columns: 1fr 1fr; }
+    .pillar-grid, .sub-grid, .integration-grid, .analogy-grid, .three-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="bg-overlay"></div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PASSWORD GATE
+══════════════════════════════════════════════════════════════ -->
+<div id="gate">
+  <img src="/platform/Bloomberg_Logotype_White.png" alt="Bloomberg" class="gate-logo"/>
+  <div class="gate-card">
+    <div class="gate-icon">🔒</div>
+    <h2>Bloomberg Reporter Platform</h2>
+    <p>This platform contains strategic vision content intended for directors, product managers &amp; tech leads. Enter the access code to continue.</p>
+    <input type="password" id="gate-input" placeholder="Access code" autocomplete="off"/>
+    <button onclick="checkPassword()">Unlock Platform</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     APP
+══════════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none">
+
+  <header>
+    <img src="/platform/Bloomberg_Logotype_White.png" alt="Bloomberg" class="logo" onclick="navigate('reporter')"/>
+    <div class="header-title">
+      <span class="platform-label">PLATFORM</span>
+    </div>
+    <nav id="nav">
+      <button onclick="navigate('reporter')"      data-page="reporter">Reporter</button>
+      <button onclick="navigate('portal')"        data-page="portal">Portal</button>
+      <button onclick="navigate('integrations')"  data-page="integrations">Integrations</button>
+      <button onclick="navigate('subscriptions')" data-page="subscriptions">Subscription Plans</button>
+    </nav>
+    <div class="header-badge">CONFIDENTIAL · INTERNAL</div>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ══════════════════════════════════════════════════════
+         PAGE 1 — BLOOMBERG REPORTER (App Mockup)
+    ══════════════════════════════════════════════════════ -->
+    <div class="page" id="page-reporter">
+      <style>
+        /* ── Reporter App Shell ── */
+        .rapp {
+          border-radius: 14px; overflow: hidden;
+          border: 1px solid rgba(79,142,247,0.22);
+          box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 24px 64px rgba(0,0,0,0.6);
+          display: flex; flex-direction: column;
+          background: #12151e;
+          font-size: 13px;
+        }
+        /* Window chrome */
+        .rapp-chrome {
+          display: flex; align-items: center; gap: 8px;
+          padding: 10px 16px; background: #0d1017;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .rapp-chrome .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .rapp-chrome .win-title {
+          font-size: 12px; color: var(--text-secondary); font-weight: 500;
+          margin-left: 6px;
+        }
+        /* App toolbar */
+        .rapp-toolbar {
+          display: flex; align-items: center; gap: 0;
+          background: linear-gradient(180deg, #1c2240, #141929);
+          border-bottom: 2px solid rgba(79,142,247,0.35);
+          padding: 0 16px; height: 54px;
+        }
+        .rapp-toolbar .brand {
+          display: flex; align-items: center; gap: 10px; margin-right: 28px;
+        }
+        .rapp-toolbar .brand img { height: 30px; opacity: 0.95; }
+        .rapp-toolbar .brand-sub {
+          display: flex; flex-direction: column; line-height: 1.2;
+        }
+        .rapp-toolbar .brand-sub .bname {
+          font-size: 16px; font-weight: 900; color: #fff; letter-spacing: 0.06em;
+        }
+        .rapp-toolbar .brand-sub .bver {
+          font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em;
+        }
+        .rapp-toolbar .conn-label {
+          font-size: 11px; color: rgba(255,255,255,0.45); margin-right: 8px; white-space: nowrap;
+        }
+        .rapp-toolbar .conn-pill {
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(0,0,0,0.35); border: 1px solid rgba(79,142,247,0.3);
+          border-radius: 6px; padding: 5px 14px; font-size: 11px;
+          color: var(--text-secondary); font-family: 'Courier New', monospace; white-space: nowrap;
+        }
+        .rapp-toolbar .conn-pill .conn-dot {
+          width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+          box-shadow: 0 0 6px var(--green); flex-shrink: 0;
+          animation: conn-pulse 2s ease-in-out infinite;
+        }
+        @keyframes conn-pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+        .rapp-toolbar .toolbar-spacer { flex: 1; }
+        .rapp-toolbar .tb-btn {
+          width: 34px; height: 34px; border-radius: 7px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.04);
+          color: rgba(255,255,255,0.55); font-size: 14px;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; margin-left: 6px;
+          transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .rapp-toolbar .tb-btn:hover {
+          background: rgba(79,142,247,0.15); border-color: rgba(79,142,247,0.4); color: #fff;
+        }
+        /* Update banner */
+        .rapp-banner {
+          display: flex; align-items: center; justify-content: center; gap: 12px;
+          padding: 9px 16px;
+          background: linear-gradient(90deg, rgba(210,153,34,0.18), rgba(210,153,34,0.1));
+          border-bottom: 1px solid rgba(210,153,34,0.35);
+          font-size: 12px; color: #e8c84a; font-weight: 500;
+        }
+        .rapp-banner .banner-btn {
+          padding: 3px 14px; border-radius: 5px; font-size: 11px; font-weight: 700;
+          background: rgba(210,153,34,0.25); border: 1px solid rgba(210,153,34,0.5);
+          color: #e8c84a; cursor: pointer; font-family: inherit;
+          transition: background 0.15s;
+        }
+        .rapp-banner .banner-btn:hover { background: rgba(210,153,34,0.4); }
+        /* Tabs bar */
+        .rapp-tabs {
+          display: flex; align-items: stretch; gap: 0;
+          background: #0f1320;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          padding: 0 16px;
+        }
+        .rapp-tab {
+          padding: 9px 16px; font-size: 12px; font-weight: 500;
+          color: var(--text-secondary); cursor: pointer; border: none; background: none;
+          border-bottom: 2px solid transparent; font-family: inherit;
+          transition: color 0.15s; white-space: nowrap;
+        }
+        .rapp-tab:hover { color: var(--text-primary); }
+        .rapp-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+        /* Main area: sidebar + content */
+        .rapp-body { display: flex; flex: 1; min-height: 0; }
+        /* Sidebar */
+        .rapp-sidebar {
+          width: 52px; flex-shrink: 0;
+          background: #0d1017;
+          border-right: 1px solid rgba(255,255,255,0.06);
+          display: flex; flex-direction: column; align-items: center;
+          padding: 12px 0; gap: 6px;
+        }
+        .rapp-sidebar .sb-btn {
+          width: 36px; height: 36px; border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 16px; cursor: pointer; color: rgba(255,255,255,0.4);
+          transition: background 0.15s, color 0.15s;
+          position: relative;
+        }
+        .rapp-sidebar .sb-btn:hover, .rapp-sidebar .sb-btn.active {
+          background: rgba(79,142,247,0.15); color: var(--accent);
+        }
+        .rapp-sidebar .sb-divider {
+          width: 28px; height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0;
+        }
+        .rapp-sidebar .sb-badge {
+          position: absolute; top: 2px; right: 2px;
+          width: 14px; height: 14px; border-radius: 50%;
+          background: var(--red); font-size: 8px; font-weight: 800; color: #fff;
+          display: flex; align-items: center; justify-content: center;
+        }
+        /* Content pane */
+        .rapp-content { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+        /* Report workspace */
+        .rapp-workspace {
+          flex: 1; position: relative; min-height: 340px;
+          background: #0b0e16;
+          display: flex; flex-direction: column;
+        }
+        /* Workspace toolbar */
+        .rapp-ws-toolbar {
+          display: flex; align-items: center; gap: 8px;
+          padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+          background: #0f1320;
+        }
+        .rapp-ws-toolbar .ws-btn {
+          display: flex; align-items: center; gap: 6px;
+          padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+          color: var(--text-secondary); cursor: pointer; font-family: inherit;
+          transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .rapp-ws-toolbar .ws-btn:hover {
+          background: rgba(79,142,247,0.12); border-color: rgba(79,142,247,0.35); color: var(--text-primary);
+        }
+        .rapp-ws-toolbar .ws-btn.primary {
+          background: rgba(79,142,247,0.15); border-color: rgba(79,142,247,0.4); color: var(--accent);
+        }
+        .rapp-ws-toolbar .ws-sep { width: 1px; height: 22px; background: rgba(255,255,255,0.08); margin: 0 4px; }
+        .rapp-ws-toolbar .ws-search {
+          margin-left: auto; display: flex; align-items: center; gap: 6px;
+          background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 6px; padding: 5px 10px;
+        }
+        .rapp-ws-toolbar .ws-search input {
+          background: none; border: none; outline: none; color: var(--text-primary);
+          font-size: 12px; font-family: inherit; width: 160px;
+        }
+        .rapp-ws-toolbar .ws-search input::placeholder { color: var(--text-muted); }
+        /* Drop zone */
+        .rapp-dropzone {
+          flex: 1; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 16px;
+          border: 2px dashed rgba(79,142,247,0.2);
+          margin: 20px; border-radius: 12px;
+          transition: border-color 0.2s, background 0.2s;
+          cursor: pointer;
+          position: relative;
+        }
+        .rapp-dropzone:hover {
+          border-color: rgba(79,142,247,0.5);
+          background: rgba(79,142,247,0.04);
+        }
+        .rapp-dropzone .dz-icon {
+          width: 64px; height: 64px; border-radius: 16px;
+          background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.25);
+          display: flex; align-items: center; justify-content: center; font-size: 28px;
+        }
+        .rapp-dropzone h3 { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        .rapp-dropzone p  { font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.6; max-width: 340px; }
+        .rapp-dropzone .dz-or {
+          font-size: 11px; color: var(--text-muted); font-weight: 500;
+        }
+        .rapp-dropzone .dz-btn {
+          padding: 8px 22px; border-radius: 7px; font-size: 13px; font-weight: 600;
+          background: linear-gradient(135deg, rgba(79,142,247,0.2), rgba(79,142,247,0.1));
+          border: 1px solid rgba(79,142,247,0.4); color: var(--accent); cursor: pointer;
+          font-family: inherit; transition: background 0.15s;
+        }
+        .rapp-dropzone .dz-btn:hover { background: rgba(79,142,247,0.3); }
+        .rapp-dropzone .dz-formats {
+          display: flex; gap: 8px;
+        }
+        .rapp-dropzone .dz-fmt {
+          font-size: 10px; padding: 2px 8px; border-radius: 4px;
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+          color: var(--text-muted); font-weight: 600; font-family: 'Courier New', monospace;
+        }
+        /* AI suggestion chip */
+        .rapp-ai-chip {
+          position: absolute; bottom: 16px; right: 16px;
+          display: flex; align-items: center; gap: 8px;
+          padding: 8px 14px; border-radius: 20px;
+          background: rgba(199,125,255,0.1); border: 1px solid rgba(199,125,255,0.3);
+          font-size: 11px; color: var(--purple); font-weight: 600; cursor: pointer;
+          transition: background 0.15s;
+        }
+        .rapp-ai-chip:hover { background: rgba(199,125,255,0.18); }
+        .rapp-ai-chip .ai-dot {
+          width: 7px; height: 7px; border-radius: 50%; background: var(--purple);
+          animation: conn-pulse 1.5s ease-in-out infinite;
+        }
+        /* Sent reports panel */
+        .rapp-sent {
+          background: #0d1017;
+          border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .rapp-sent-header {
+          display: flex; align-items: center; gap: 10px;
+          padding: 9px 16px; cursor: pointer; user-select: none;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          background: #10141f;
+        }
+        .rapp-sent-header .sh-arrow {
+          font-size: 10px; color: var(--text-muted);
+          transition: transform 0.2s;
+        }
+        .rapp-sent-header .sh-arrow.open { transform: rotate(180deg); }
+        .rapp-sent-header .sh-title { font-size: 12px; font-weight: 700; color: var(--text-primary); flex: 1; }
+        .rapp-sent-header .sh-count {
+          font-size: 10px; padding: 1px 8px; border-radius: 8px;
+          background: rgba(79,142,247,0.15); color: var(--accent); font-weight: 700;
+        }
+        /* Table */
+        .rapp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .rapp-table th {
+          padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 700;
+          color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
+          background: #0d1017; white-space: nowrap;
+        }
+        .rapp-table td {
+          padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+          color: var(--text-secondary); white-space: nowrap;
+        }
+        .rapp-table tr:hover td { background: rgba(79,142,247,0.04); color: var(--text-primary); }
+        .rapp-table .td-key {
+          color: var(--accent); font-weight: 600; font-family: 'Courier New', monospace;
+          text-decoration: none; cursor: pointer;
+        }
+        .rapp-table .td-key:hover { text-decoration: underline; }
+        .rapp-table .td-status-sent    { color: var(--green); font-weight: 600; }
+        .rapp-table .td-status-pending { color: var(--amber); font-weight: 600; }
+        .rapp-table .td-status-failed  { color: var(--red);   font-weight: 600; }
+        .rapp-table .td-type-exc  { color: var(--red);    background: rgba(248,81,73,0.1);  padding: 1px 8px; border-radius: 4px; font-size: 11px; }
+        .rapp-table .td-type-bug  { color: var(--amber);  background: rgba(210,153,34,0.1); padding: 1px 8px; border-radius: 4px; font-size: 11px; }
+        .rapp-table .td-type-feat { color: var(--accent); background: rgba(79,142,247,0.1); padding: 1px 8px; border-radius: 4px; font-size: 11px; }
+        .rapp-table .td-remove {
+          color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 0 8px;
+          transition: color 0.15s;
+        }
+        .rapp-table .td-remove:hover { color: var(--red); }
+        /* Status bar */
+        .rapp-statusbar {
+          display: flex; align-items: center; gap: 16px;
+          padding: 5px 16px; background: #0a0d14;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          font-size: 10px; color: var(--text-muted);
+        }
+        .rapp-statusbar .sb-item { display: flex; align-items: center; gap: 5px; }
+        .rapp-statusbar .sb-item .sbi-dot { width: 6px; height: 6px; border-radius: 50%; }
+      </style>
+
+      <div class="rapp" style="flex:1;display:flex;flex-direction:column;min-height:0;position:relative;">
+        <!-- Bloom loader -->
+        <div class="bloom-loader" id="loader-reporter">
+          <div class="bloom-loader-ring-wrap">
+            <div class="bloom-loader-ring-outer"></div>
+            <div class="bloom-loader-ring"></div>
+            <img class="bloom-loader-logo" src="/platform/Bloomberg_Logo_Black.png" alt=""/>
+          </div>
+          <div class="bloom-loader-label">Bloomberg Reporter</div>
+        </div>
+        <!-- Window chrome -->
+        <div class="rapp-chrome">
+          <div class="dot" style="background:#f85149;"></div>
+          <div class="dot" style="background:#d29922;"></div>
+          <div class="dot" style="background:#3fb950;"></div>
+          <span class="win-title">Bloomberg Reporter Web</span>
+        </div>
+
+        <!-- App toolbar -->
+        <div class="rapp-toolbar">
+          <div class="brand">
+            <div class="brand-sub">
+              <span class="bname">REPORTER</span>
+              <span class="bver">Web v7.0.0 · Standalone</span>
+            </div>
+          </div>
+          <span class="conn-label">Connection history</span>
+          <div class="conn-pill">
+            <div class="conn-dot"></div>
+            10.9.40.27 at 6/26/2026 09:14:02 AM (R6)
+          </div>
+          <div class="toolbar-spacer"></div>
+          <div class="tb-btn" title="Bloomberg Reporter" style="padding:0;overflow:hidden;border-color:rgba(79,142,247,0.3);">
+            <img src="/platform/Bloomberg_Logo_Black.png" alt="B" style="width:22px;height:22px;object-fit:contain;filter:invert(1) brightness(0.8);"/>
+          </div>
+          <div class="tb-btn" title="New report">📄</div>
+          <div class="tb-btn" title="Help">?</div>
+          <div class="tb-btn" title="Settings">⚙</div>
+        </div>
+
+        <!-- Update banner -->
+        <div class="rapp-banner">
+          <span>✦ A new version of Bloomberg Reporter is available</span>
+          <button class="banner-btn">Restart now</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="rapp-tabs">
+          <button class="rapp-tab active">Reports</button>
+          <button class="rapp-tab">Crashes</button>
+          <button class="rapp-tab">My Issues</button>
+          <button class="rapp-tab">Analytics</button>
+          <button class="rapp-tab">Team Queue</button>
+          <button class="rapp-tab">Settings</button>
+        </div>
+
+        <!-- Body: sidebar + content -->
+        <div class="rapp-body">
+          <!-- Sidebar -->
+          <div class="rapp-sidebar">
+            <div class="sb-btn active" title="Reports">📋</div>
+            <div class="sb-btn" title="Crashes">💥</div>
+            <div class="sb-btn" title="Search">🔍</div>
+            <div class="sb-divider"></div>
+            <div class="sb-btn" title="Notifications" style="position:relative;">
+              🔔
+              <div class="sb-badge">3</div>
+            </div>
+            <div class="sb-btn" title="AI Assistant">✨</div>
+            <div class="sb-divider"></div>
+            <div class="sb-btn" title="Settings">⚙</div>
+          </div>
+
+          <!-- Content -->
+          <div class="rapp-content">
+            <!-- Workspace toolbar -->
+            <div class="rapp-ws-toolbar">
+              <button class="ws-btn primary">＋ New Report</button>
+              <button class="ws-btn">📂 Open</button>
+              <div class="ws-sep"></div>
+              <button class="ws-btn">⬆ Submit</button>
+              <button class="ws-btn">💾 Save Draft</button>
+              <div class="ws-sep"></div>
+              <button class="ws-btn">🔄 Sync with Jira</button>
+              <div class="ws-search">
+                <span style="color:var(--text-muted);font-size:12px;">🔍</span>
+                <input placeholder="Search reports, issues…" readonly/>
+              </div>
+            </div>
+
+            <!-- Drop zone -->
+            <div class="rapp-workspace">
+              <div class="rapp-dropzone" id="dropzone" onclick="dropzoneClick()">
+                <!-- Bloom icon — static, no circle -->
+                <img src="/platform/Bloomberg_Logo_Black.png" alt="Bloom" style="
+                  width:56px;height:56px;object-fit:contain;flex-shrink:0;
+                  filter:brightness(0) invert(1);
+                  animation:bloom-pulse 3s ease-in-out infinite;
+                "/>
+                <h3>Drop a report file here</h3>
+                <p>Drag &amp; drop a .report, .dmp or .zip file to create a new report, or use the button below to browse your machine.</p>
+                <div class="dz-formats">
+                  <span class="dz-fmt">.report</span>
+                  <span class="dz-fmt">.dmp</span>
+                  <span class="dz-fmt">.zip</span>
+                  <span class="dz-fmt">.rpt</span>
+                </div>
+                <div class="dz-or">— or —</div>
+                <button class="dz-btn">Browse Files</button>
+              </div>
+              <div class="rapp-ai-chip" title="QA Companion is active">
+                <div class="ai-dot"></div>
+                QA Companion · AI Triage Active
+              </div>
+            </div>
+
+            <!-- Sent Reports panel -->
+            <div class="rapp-sent">
+              <div class="rapp-sent-header" onclick="toggleSent(this)">
+                <span class="sh-arrow open">▲</span>
+                <span class="sh-title">Sent Reports</span>
+                <span class="sh-count">6</span>
+              </div>
+              <div id="sent-table-wrap" style="overflow-x:auto;">
+                <table class="rapp-table">
+                  <thead>
+                    <tr>
+                      <th style="width:22px;"></th>
+                      <th>Report Time</th>
+                      <th>Project Name</th>
+                      <th>Issue Status</th>
+                      <th>Portal URL</th>
+                      <th>Status</th>
+                      <th>Type</th>
+                      <th>Sent Time</th>
+                      <th>Assignee</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="td-remove">✕</td>
+                      <td>5/14/2026 3:24:32 PM</td>
+                      <td>BloomAutoTest</td>
+                      <td><a class="td-key">BLOOM-9056</a> <span style="font-size:11px;cursor:pointer;">✏</span></td>
+                      <td><a class="td-key">BLOOM-9056</a></td>
+                      <td class="td-status-sent">Sent</td>
+                      <td><span class="td-type-exc">Exception</span></td>
+                      <td>6/5/2026 5:08 PM</td>
+                      <td style="color:var(--text-muted);">—</td>
+                    </tr>
+                    <tr>
+                      <td class="td-remove">✕</td>
+                      <td>6/10/2026 11:02:10 AM</td>
+                      <td>BloomReporter</td>
+                      <td><a class="td-key">BLOOM-9071</a></td>
+                      <td><a class="td-key">BLOOM-9071</a></td>
+                      <td class="td-status-sent">Sent</td>
+                      <td><span class="td-type-bug">Bug</span></td>
+                      <td>6/10/2026 11:03 AM</td>
+                      <td style="color:var(--text-muted);">L. Popescu</td>
+                    </tr>
+                    <tr>
+                      <td class="td-remove">✕</td>
+                      <td>6/12/2026 2:47:55 PM</td>
+                      <td>BloomAutoTest</td>
+                      <td><a class="td-key">BLOOM-9084</a></td>
+                      <td><a class="td-key">BLOOM-9084</a></td>
+                      <td class="td-status-pending">Pending</td>
+                      <td><span class="td-type-exc">Exception</span></td>
+                      <td>6/12/2026 2:48 PM</td>
+                      <td style="color:var(--text-muted);">F. Tudose</td>
+                    </tr>
+                    <tr>
+                      <td class="td-remove">✕</td>
+                      <td>6/18/2026 9:15:30 AM</td>
+                      <td>BloomReporter</td>
+                      <td><a class="td-key">BLOOM-9102</a></td>
+                      <td><a class="td-key">BLOOM-9102</a></td>
+                      <td class="td-status-sent">Sent</td>
+                      <td><span class="td-type-feat">Feature</span></td>
+                      <td>6/18/2026 9:16 AM</td>
+                      <td style="color:var(--text-muted);">B. Pirsan</td>
+                    </tr>
+                    <tr>
+                      <td class="td-remove">✕</td>
+                      <td>6/20/2026 4:33:12 PM</td>
+                      <td>BloomPortal</td>
+                      <td><a class="td-key">BLOOM-9118</a></td>
+                      <td><a class="td-key">BLOOM-9118</a></td>
+                      <td class="td-status-failed">Failed</td>
+                      <td><span class="td-type-exc">Exception</span></td>
+                      <td>6/20/2026 4:34 PM</td>
+                      <td style="color:var(--text-muted);">—</td>
+                    </tr>
+                    <tr>
+                      <td class="td-remove">✕</td>
+                      <td>6/25/2026 8:05:44 AM</td>
+                      <td>BloomAutoTest</td>
+                      <td><a class="td-key">BLOOM-9131</a></td>
+                      <td><a class="td-key">BLOOM-9131</a></td>
+                      <td class="td-status-sent">Sent</td>
+                      <td><span class="td-type-bug">Bug</span></td>
+                      <td>6/25/2026 8:06 AM</td>
+                      <td style="color:var(--text-muted);">J-F. Lemay</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Status bar -->
+            <div class="rapp-statusbar">
+              <div class="sb-item"><div class="sbi-dot" style="background:var(--green);"></div> Connected</div>
+              <div class="sb-item">6 reports sent</div>
+              <div class="sb-item"><div class="sbi-dot" style="background:var(--amber);"></div> 1 pending</div>
+              <div class="sb-item"><div class="sbi-dot" style="background:var(--red);"></div> 1 failed</div>
+              <div style="margin-left:auto;" class="sb-item"><div class="sbi-dot" style="background:var(--purple);"></div> QA Companion active</div>
+            </div>
+          </div><!-- /rapp-content -->
+        </div><!-- /rapp-body -->
+      </div><!-- /rapp -->
+
+      <script>
+        function toggleSent(header) {
+          const wrap = document.getElementById('sent-table-wrap');
+          const arrow = header.querySelector('.sh-arrow');
+          const isOpen = arrow.classList.contains('open');
+          wrap.style.display = isOpen ? 'none' : 'block';
+          arrow.classList.toggle('open', !isOpen);
+          arrow.textContent = isOpen ? '▼' : '▲';
+        }
+        function dropzoneClick() {
+          const dz = document.getElementById('dropzone');
+          dz.style.borderColor = 'rgba(79,142,247,0.7)';
+          dz.style.background  = 'rgba(79,142,247,0.08)';
+          setTimeout(() => {
+            dz.style.borderColor = '';
+            dz.style.background  = '';
+          }, 600);
+        }
+      </script>
+
+    </div><!-- /page-reporter -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         PAGE 2 — BLOOMBERG PORTAL
+    ══════════════════════════════════════════════════════ -->
+    <div class="page" id="page-portal">
+
+      <!-- App window chrome matching Reporter -->
+      <div class="rapp" style="flex:1;display:flex;flex-direction:column;min-height:0;position:relative;">
+        <!-- Bloom loader -->
+        <div class="bloom-loader" id="loader-portal">
+          <div class="bloom-loader-ring-wrap">
+            <div class="bloom-loader-ring-outer"></div>
+            <div class="bloom-loader-ring"></div>
+            <img class="bloom-loader-logo" src="/platform/Bloomberg_Logo_Black.png" alt=""/>
+          </div>
+          <div class="bloom-loader-label">Bloomberg Portal</div>
+        </div>
+
+        <!-- Window chrome dots -->
+        <div class="rapp-chrome">
+          <div class="dot" style="background:#f85149;"></div>
+          <div class="dot" style="background:#d29922;"></div>
+          <div class="dot" style="background:#3fb950;"></div>
+          <span class="win-title">Bloomberg Portal · Live</span>
+        </div>
+
+
+        <!-- URL / search bar -->
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;background:#0f1320;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:center;gap:8px;flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:6px 12px;font-size:12px;font-family:'Courier New',monospace;color:var(--text-secondary);">
+            <span style="color:var(--text-muted);font-family:inherit;">🔒</span>
+            <span style="color:var(--accent);">https://</span>tgdp.bloom.ubisoft.org/Occurrences/GetFilteredIssues?Filters.IssueKey=TGDP-5805
+          </div>
+          <div style="font-size:11px;padding:3px 10px;border-radius:5px;background:rgba(63,185,80,0.12);border:1px solid rgba(63,185,80,0.3);color:var(--green);font-weight:700;white-space:nowrap;">● LIVE</div>
+        </div>
+
+        <!-- iframe fills remaining space -->
+        <div id="portal-iframe-flex" style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#fff;">
+          <iframe
+            id="portal-iframe"
+            src="https://tgdp.bloom.ubisoft.org/Occurrences/GetFilteredIssues?Filters.IssueKey=TGDP-5805"
+            title="Bloomberg Portal — Live"
+            sandbox="allow-same-origin allow-scripts allow-forms"
+            loading="lazy"
+            style="flex:1;width:100%;border:none;display:block;">
+          </iframe>
+        </div>
+
+        <!-- Status bar -->
+        <div class="rapp-statusbar">
+          <div class="sb-item"><div class="sbi-dot" style="background:var(--green);"></div> Portal live — internal network required</div>
+          <div style="margin-left:auto;" class="sb-item" style="font-size:10px;color:var(--text-muted);">Requires Ubisoft VPN or internal network</div>
+        </div>
+
+      </div><!-- /rapp -->
+
+    </div><!-- /page-portal -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         PAGE 3 — INTEGRATIONS
+    ══════════════════════════════════════════════════════ -->
+    <div class="page" id="page-integrations">
+
+      <div class="section-header">
+        <div class="eyebrow">Platform Settings</div>
+        <h1>Integrations</h1>
+        <p>Manage connections between Bloomberg and external services. Toggles take effect immediately for your workspace.</p>
+      </div>
+
+      <div class="intg-panels">
+
+        <!-- AI Modules -->
+        <div class="intg-panel">
+          <div class="intg-panel-header">
+            <span class="intg-panel-title">AI Modules</span>
+            <span class="intg-panel-count">4 integrations</span>
+          </div>
+
+          <div class="intg-row">
+            <div class="intg-icon" style="background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);">
+              <img src="/platform/Bloomberg_Logo_Black.png" style="width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(1);" onerror="this.parentElement.innerHTML='💬'"/>
+            </div>
+            <div class="intg-info">
+              <div class="intg-name">Bloom AI Assistant</div>
+              <div class="intg-desc">Natural language queries — reports, crashes, Jira, Portal navigation</div>
+            </div>
+            <span class="intg-status is-active">Active</span>
+            <label class="intg-toggle"><input type="checkbox" checked onchange="intgToggle(this,'bloom')"/><span class="intg-slider"></span></label>
+          </div>
+
+          <div class="intg-row">
+            <div class="intg-icon">
+              <img src="/platform/images/qa-companion.jpg" onerror="this.parentElement.style.background='rgba(199,125,255,0.1)';this.parentElement.innerHTML='🤖'"/>
+            </div>
+            <div class="intg-info">
+              <div class="intg-name">QA Companion</div>
+              <div class="intg-desc">AI defect triage — classification, deduplication, root-cause suggestions</div>
+            </div>
+            <span class="intg-status is-active">Active</span>
+            <label class="intg-toggle"><input type="checkbox" checked onchange="intgToggle(this,'qa-companion')"/><span class="intg-slider"></span></label>
+          </div>
+
+          <div class="intg-row">
+            <div class="intg-icon">
+              <img src="/platform/images/qc-assistant.jpg" onerror="this.parentElement.style.background='rgba(79,142,247,0.1)';this.parentElement.innerHTML='🧠'"/>
+            </div>
+            <div class="intg-info">
+              <div class="intg-name">QC Assistant</div>
+              <div class="intg-desc">Workflow AI — test coverage gaps, sprint health, automated reporting</div>
+            </div>
+            <span class="intg-status is-beta">Beta</span>
+            <label class="intg-toggle"><input type="checkbox" onchange="intgToggle(this,'qc-assistant')"/><span class="intg-slider"></span></label>
+          </div>
+
+          <div class="intg-row">
+            <div class="intg-icon">
+              <img src="/platform/images/eagle-eye.jpg" onerror="this.parentElement.style.background='rgba(210,153,34,0.1)';this.parentElement.innerHTML='👁️'"/>
+            </div>
+            <div class="intg-info">
+              <div class="intg-name">Eagle Eye</div>
+              <div class="intg-desc">Anomaly detection — crash spike alerts, defect trend prediction</div>
+            </div>
+            <span class="intg-status is-beta">Beta</span>
+            <label class="intg-toggle"><input type="checkbox" onchange="intgToggle(this,'eagle-eye')"/><span class="intg-slider"></span></label>
+          </div>
+
+        </div>
+
+        <!-- Issue Tracking -->
+        <div class="intg-panel">
+          <div class="intg-panel-header">
+            <span class="intg-panel-title">Issue Tracking</span>
+            <span class="intg-panel-count">1 integration</span>
+          </div>
+
+          <div class="intg-row">
+            <div class="intg-icon" style="background:#0052cc;border-radius:9px;display:flex;align-items:center;justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M16 3L3 16l6 6 7-7 7 7 6-6L16 3z" fill="white" opacity="0.9"/><path d="M16 3l7 13H9L16 3z" fill="white" opacity="0.5"/></svg>
+            </div>
+            <div class="intg-info">
+              <div class="intg-name">Jira</div>
+              <div class="intg-desc">Bidirectional sync — defects, status, assignee, resolution</div>
+            </div>
+            <span class="intg-status is-live">Live</span>
+            <label class="intg-toggle"><input type="checkbox" checked onchange="intgToggle(this,'jira')"/><span class="intg-slider"></span></label>
+          </div>
+
+        </div>
+
+        <!-- Notifications -->
+        <div class="intg-panel">
+          <div class="intg-panel-header">
+            <span class="intg-panel-title">Notifications</span>
+            <span class="intg-panel-count">1 integration</span>
+          </div>
+
+          <div class="intg-row">
+            <div class="intg-icon" style="background:#fff;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:4px;">
+              <!-- Microsoft Teams official logo -->
+              <svg width="30" height="30" viewBox="0 0 2228.833 2073.333" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1554.637 777.5h575.713c54.391 0 98.483 44.092 98.483 98.483v524.398c0 199.901-162.051 361.952-361.952 361.952h-1.711c-199.901.028-361.975-162.023-361.975-361.924V828.971c0-28.425 23.046-51.471 51.442-51.471z" fill="#5059c9"/>
+                <circle cx="1943.75" cy="440.583" r="233.25" fill="#5059c9"/>
+                <circle cx="1218.083" cy="336.917" r="336.917" fill="#7b83eb"/>
+                <path d="M1667.323 777.5H717.01c-53.743 1.33-96.257 45.931-94.927 99.675v598.105c-7.825 322.069 247.353 590.383 569.422 598.208 322.069-7.825 577.247-276.139 569.422-598.208V877.175c1.33-53.744-41.184-98.345-94.927-99.675h.323z" fill="#7b83eb"/>
+                <path d="M1244 777.5v838.145c-.258 38.435-23.549 72.964-59.09 87.598a91.856 91.856 0 01-35.765 7.257H667.613c-6.738-17.345-12.958-34.69-18.142-52.681a631.287 631.287 0 01-27.472-183.49V877.175c-1.33-53.744 41.184-98.345 94.927-99.675H1244z" opacity=".1"/>
+                <path d="M1190.667 777.5v891.477a91.802 91.802 0 01-7.257 35.765c-14.634 35.541-49.163 58.832-87.598 59.09H691.975c-8.812-17.345-17.077-34.69-24.311-52.681a631.282 631.282 0 01-27.472-183.49V877.175c-1.33-53.744 41.184-98.345 94.927-99.675h455.548z" opacity=".2"/>
+                <path d="M1190.667 777.5v784.812c-.348 52.788-43.139 95.579-95.927 95.927H667.613c-6.738-17.345-12.958-34.69-18.142-52.681a631.287 631.287 0 01-27.472-183.49V877.175c-1.33-53.744 41.184-98.345 94.927-99.675h473.741z" opacity=".2"/>
+                <path d="M1137.333 777.5v784.812c-.348 52.788-43.139 95.579-95.927 95.927H667.613c-6.738-17.345-12.958-34.69-18.142-52.681a631.287 631.287 0 01-27.472-183.49V877.175c-1.33-53.744 41.184-98.345 94.927-99.675h420.407z" opacity=".2"/>
+                <path d="M1244 509.522v163.275c-8.812.485-17.077.97-25.889.97-8.812 0-17.077-.485-25.889-.97a284.472 284.472 0 01-53.651-10.787c-31.158-9.302-60.087-24.554-85.478-44.961a284.378 284.378 0 01-27.017-25.242c-74.384-83.034-80.803-208.777-15.497-299.13h.485A336.593 336.593 0 011244 509.522z" opacity=".1"/>
+                <path d="M1190.667 562.858v110.1a284.472 284.472 0 01-53.651-10.787c-31.158-9.302-60.087-24.554-85.478-44.961a284.378 284.378 0 01-27.017-25.242c-74.384-83.034-80.803-208.777-15.497-299.13 108.199 82.956 171.155 213.089 181.643 269.62-.001 0-.001.4 0 .4z" opacity=".2"/>
+                <linearGradient id="a" gradientUnits="userSpaceOnUse" x1="198.099" y1="1973.639" x2="942.234" y2="707.595" gradientTransform="matrix(1 0 0 -1 0 2075.333)">
+                  <stop offset="0" stop-color="#5a62c3"/>
+                  <stop offset=".5" stop-color="#4d55bd"/>
+                  <stop offset="1" stop-color="#3940ab"/>
+                </linearGradient>
+                <path d="M95.01 292.359h950.927c52.473 0 95.01 42.538 95.01 95.01v950.927c0 52.473-42.538 95.01-95.01 95.01H95.01C42.538 1433.306 0 1390.768 0 1338.295V387.368c0-52.472 42.538-95.009 95.01-95.009z" fill="url(#a)"/>
+                <path d="M820.211 828.193H630.241v517.297H509.211V828.193H320.789V727.844H820.21v100.349z" fill="#fff"/>
+              </svg>
+            </div>
+            <div class="intg-info">
+              <div class="intg-name">Microsoft Teams</div>
+              <div class="intg-desc">P1 crash alerts, daily digest, sprint summaries pushed to team channels</div>
+            </div>
+            <span class="intg-status is-config">Configure</span>
+            <label class="intg-toggle"><input type="checkbox" onchange="intgToggle(this,'teams')"/><span class="intg-slider"></span></label>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div><!-- /page-integrations -->
+
+
+    <!-- ══════════════════════════════════════════════════════
+         PAGE 4 — SUBSCRIPTION PLANS
+    ══════════════════════════════════════════════════════ -->
+    <div class="page" id="page-subscriptions">
+
+      <style>
+        /* ── Vintage 90s CRT theme ── */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        .sub-card-vintage {
+          background: #0a0f0a;
+          border: 2px solid #33ff33;
+          border-radius: 4px;
+          padding: 0;
+          display: flex; flex-direction: column;
+          position: relative; overflow: hidden;
+          box-shadow: 0 0 0 1px #000, 0 0 18px rgba(51,255,51,0.25), inset 0 0 40px rgba(0,0,0,0.5);
+          font-family: 'VT323', 'Share Tech Mono', monospace;
+        }
+        /* CRT scanlines overlay */
+        .sub-card-vintage::before {
+          content: '';
+          position: absolute; inset: 0; z-index: 1; pointer-events: none;
+          background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0,0,0,0.18) 2px,
+            rgba(0,0,0,0.18) 4px
+          );
+        }
+        /* screen flicker */
+        .sub-card-vintage::after {
+          content: '';
+          position: absolute; inset: 0; z-index: 2; pointer-events: none;
+          background: linear-gradient(rgba(51,255,51,0.03) 50%, transparent 50%);
+          background-size: 100% 4px;
+          animation: crt-flicker 8s step-end infinite;
+        }
+        @keyframes crt-flicker {
+          0%,96%,100% { opacity: 1; }
+          97%          { opacity: 0.85; }
+          98%          { opacity: 1; }
+          99%          { opacity: 0.7; }
+        }
+        .vtg-titlebar {
+          background: #33ff33; color: #000;
+          font-family: 'VT323', monospace; font-size: 15px; font-weight: 400;
+          padding: 4px 10px; letter-spacing: 0.08em;
+          display: flex; align-items: center; justify-content: space-between;
+          position: relative; z-index: 3;
+        }
+        .vtg-titlebar .vtg-dots { display: flex; gap: 5px; }
+        .vtg-titlebar .vtg-dot { width: 10px; height: 10px; border-radius: 1px; background: #000; opacity: 0.5; }
+        .vtg-body { padding: 18px 20px; position: relative; z-index: 3; flex: 1; display: flex; flex-direction: column; }
+        .vtg-logo-row {
+          display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+        }
+        .vtg-logo-row img { height: 36px; object-fit: contain; opacity: 0.9; }
+        .vtg-plan-name {
+          font-family: 'VT323', monospace; font-size: 42px; line-height: 1;
+          color: #33ff33; letter-spacing: 0.05em;
+          text-shadow: 0 0 8px rgba(51,255,51,0.8), 0 0 20px rgba(51,255,51,0.4);
+          margin-bottom: 6px;
+        }
+        .vtg-tagline {
+          font-family: 'Share Tech Mono', monospace; font-size: 11px;
+          color: #22cc22; line-height: 1.5; margin-bottom: 14px; opacity: 0.85;
+        }
+        .vtg-divider { border: none; border-top: 1px solid #1a661a; margin: 10px 0; }
+        .vtg-includes {
+          font-family: 'VT323', monospace; font-size: 14px; color: #22aa22;
+          letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px;
+        }
+        .vtg-row {
+          display: flex; align-items: center; gap: 8px;
+          padding: 6px 8px; margin-bottom: 4px;
+          border: 1px solid #1a5c1a; border-radius: 2px;
+          background: rgba(51,255,51,0.03);
+          font-family: 'Share Tech Mono', monospace; font-size: 11px;
+        }
+        .vtg-row.vtg-off { opacity: 0.28; filter: grayscale(1); }
+        .vtg-row .vtg-ico { font-size: 16px; flex-shrink: 0; }
+        .vtg-row .vtg-pname { color: #55ff55; font-weight: 400; font-size: 12px; }
+        .vtg-row .vtg-pdesc { color: #228822; font-size: 10px; margin-top: 1px; }
+        .vtg-row .vtg-chk { margin-left: auto; color: #33ff33; font-size: 14px; flex-shrink: 0;
+          text-shadow: 0 0 6px rgba(51,255,51,0.8); }
+        .vtg-row .vtg-chk.off { color: #1a4a1a; text-shadow: none; }
+        .vtg-cta {
+          margin-top: 20px; width: 100%; padding: 10px;
+          background: #0a0f0a; border: 1px solid #33ff33; border-radius: 2px;
+          color: #33ff33; font-family: 'VT323', monospace; font-size: 20px;
+          letter-spacing: 0.1em; cursor: pointer;
+          text-shadow: 0 0 8px rgba(51,255,51,0.6);
+          transition: background 0.15s, box-shadow 0.15s;
+        }
+        .vtg-cta:hover {
+          background: rgba(51,255,51,0.1);
+          box-shadow: 0 0 12px rgba(51,255,51,0.3);
+        }
+        .vtg-cursor {
+          display: inline-block; width: 9px; height: 16px;
+          background: #33ff33; margin-left: 3px; vertical-align: middle;
+          animation: vtg-blink 1s step-end infinite;
+        }
+        @keyframes vtg-blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+      </style>
+
+      <div class="section-header">
+        <div class="eyebrow">Platform Tiers</div>
+        <h1>Choose Your<br/><span class="highlight">Bloomberg Subscription Plan</span></h1>
+        <p>From legacy-compatible access to the full AI-powered platform experience. Each tier builds on the last — start where you are, grow into what you need.</p>
+      </div>
+
+      <div class="sub-grid">
+
+        <!-- ── TIER 1: VINTAGE (90s CRT) ── -->
+        <div class="sub-card-vintage">
+          <div class="vtg-titlebar">
+            <span>BLOOMBERG.EXE v1.0</span>
+            <div class="vtg-dots"><div class="vtg-dot"></div><div class="vtg-dot"></div><div class="vtg-dot"></div></div>
+          </div>
+          <div class="vtg-body">
+            <div class="vtg-logo-row">
+              <img src="/platform/images/ubisoft-vintage.svg" alt="Ubisoft Vintage" onerror="this.style.display='none'"/>
+            </div>
+            <div class="vtg-plan-name">VINTAGE<span class="vtg-cursor"></span></div>
+            <div class="vtg-tagline">&gt; CLASSIC DEFECT REPORTING.<br/>&gt; THE TOOL THE INDUSTRY KNOWS.<br/>&gt; RELIABILITY WITHOUT COMPLEXITY.</div>
+            <hr class="vtg-divider"/>
+            <div class="vtg-includes">&gt; WHAT'S INCLUDED_</div>
+            <div class="vtg-row">
+              <div class="vtg-ico">🐛</div>
+              <div><div class="vtg-pname">Bloomberg Reporter</div><div class="vtg-pdesc">Core defect mgmt — crashes, issues, history</div></div>
+              <div class="vtg-chk">█ ON</div>
+            </div>
+            <div class="vtg-row">
+              <div class="vtg-ico">🌐</div>
+              <div><div class="vtg-pname">Bloomberg Portal</div><div class="vtg-pdesc">Read-only occurrence view — no install</div></div>
+              <div class="vtg-chk">█ ON</div>
+            </div>
+            <div class="vtg-row vtg-off">
+              <div class="vtg-ico">🤖</div>
+              <div><div class="vtg-pname">QA Companion</div><div class="vtg-pdesc">AI triage — NOT FOUND</div></div>
+              <div class="vtg-chk off">░ OFF</div>
+            </div>
+            <div class="vtg-row vtg-off">
+              <div class="vtg-ico">💬</div>
+              <div><div class="vtg-pname">Bloom AI Agent</div><div class="vtg-pdesc">AI assistant — NOT FOUND</div></div>
+              <div class="vtg-chk off">░ OFF</div>
+            </div>
+            <div class="vtg-row vtg-off">
+              <div class="vtg-ico">🧠</div>
+              <div><div class="vtg-pname">QC Assistant</div><div class="vtg-pdesc">Workflow AI — NOT FOUND</div></div>
+              <div class="vtg-chk off">░ OFF</div>
+            </div>
+            <div class="vtg-row vtg-off">
+              <div class="vtg-ico">👁</div>
+              <div><div class="vtg-pname">Eagle Eye</div><div class="vtg-pdesc">Anomaly detection — NOT FOUND</div></div>
+              <div class="vtg-chk off">░ OFF</div>
+            </div>
+            <button class="vtg-cta">[ CURRENT BASELINE ]</button>
+          </div>
+        </div>
+
+        <!-- ── TIER 2: BASIC (unchanged) ── -->
+        <div class="sub-card featured" style="--sub-color: var(--accent);">
+          <div class="featured-tag">RECOMMENDED</div>
+          <div class="sub-logo-row">
+            <img class="bloomberg-logo" src="/platform/Bloomberg_Logotype_White.png" alt="Bloomberg"/>
+          </div>
+          <div class="plan-name">Basic</div>
+          <div class="plan-tagline">The complete Reporter experience with AI-assisted triage. The right choice for active QA teams and leads who need smart defect management.</div>
+          <div class="plan-divider"></div>
+          <div class="plan-includes">What's included</div>
+          <div class="product-list">
+            <div class="product-row">
+              <div style="width:36px;height:36px;border-radius:8px;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🐛</div>
+              <div><div class="prod-name">Bloomberg Reporter</div><div class="prod-desc">Full defect management, crash handling, Reporter Web UI</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+            <div class="product-row">
+              <div style="width:36px;height:36px;border-radius:8px;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🌐</div>
+              <div><div class="prod-name">Bloomberg Portal</div><div class="prod-desc">Full web access — create, filter, edit issues from browser</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+            <div class="product-row">
+              <img src="/platform/images/qa-companion.jpg" alt="QA Companion" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+              <div style="display:none;width:36px;height:36px;border-radius:8px;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div>
+              <div><div class="prod-name">QA Companion</div><div class="prod-desc">AI-assisted triage, duplicate detection, smart prioritisation</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+            <div class="product-row disabled">
+              <img src="/platform/images/qc-assistant.jpg" alt="QC Assistant" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"/>
+              <div><div class="prod-name">QC Assistant</div><div class="prod-desc">Workflow AI — available in Premium</div></div>
+              <div class="prod-check" style="color:var(--text-muted);">✗</div>
+            </div>
+            <div class="product-row disabled">
+              <img src="/platform/images/eagle-eye.jpg" alt="Eagle Eye" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'"/>
+              <div><div class="prod-name">Eagle Eye</div><div class="prod-desc">Anomaly detection — available in Premium</div></div>
+              <div class="prod-check" style="color:var(--text-muted);">✗</div>
+            </div>
+            <div class="product-row disabled">
+              <div style="width:36px;height:36px;border-radius:8px;background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💬</div>
+              <div><div class="prod-name">Bloom AI Agent</div><div class="prod-desc">AI assistant — available in Premium</div></div>
+              <div class="prod-check" style="color:var(--text-muted);">✗</div>
+            </div>
+          </div>
+          <button class="sub-cta cta-accent" style="margin-top:28px;">Target for M5</button>
+        </div>
+
+        <!-- ── TIER 3: PREMIUM ── -->
+        <div class="sub-card" style="--sub-color: #c77dff;">
+          <div class="sub-logo-row">
+            <img class="bloomberg-logo" src="/platform/Bloomberg_Logotype_White.png" alt="Bloomberg"/>
+          </div>
+          <div class="plan-name">Premium</div>
+          <div class="plan-tagline">The full platform. Every AI module, every integration. For teams leading the QC Technology transformation — inside Ubisoft and beyond.</div>
+          <div class="plan-divider"></div>
+          <div class="plan-includes">What's included</div>
+          <div class="product-list">
+            <div class="product-row">
+              <div style="width:36px;height:36px;border-radius:8px;background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🐛</div>
+              <div><div class="prod-name">Bloomberg Reporter</div><div class="prod-desc">Full platform — defect, crash, occurrence, analytics, API</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+            <div class="product-row">
+              <div style="width:36px;height:36px;border-radius:8px;background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🌐</div>
+              <div><div class="prod-name">Bloomberg Portal</div><div class="prod-desc">Full web suite, role-based access, stakeholder views</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+            <div class="product-row">
+              <img src="/platform/images/qa-companion.jpg" alt="QA Companion" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+              <div style="display:none;width:36px;height:36px;border-radius:8px;background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div>
+              <div><div class="prod-name">QA Companion</div><div class="prod-desc">AI triage — classification, deduplication, insights</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+            <div class="product-row">
+              <img src="/platform/images/qc-assistant.jpg" alt="QC Assistant" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+              <div style="display:none;width:36px;height:36px;border-radius:8px;background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🧠</div>
+              <div><div class="prod-name">QC Assistant</div><div class="prod-desc">Workflow AI — test coverage, sprint health, reporting</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+            <div class="product-row">
+              <img src="/platform/images/eagle-eye.jpg" alt="Eagle Eye" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+              <div style="display:none;width:36px;height:36px;border-radius:8px;background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👁️</div>
+              <div><div class="prod-name">Eagle Eye</div><div class="prod-desc">Anomaly detection, crash spike alerts, predictive trends</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+            <div class="product-row">
+              <div style="width:36px;height:36px;border-radius:8px;background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💬</div>
+              <div><div class="prod-name">Bloom AI Agent</div><div class="prod-desc">Natural language assistant — reports, crashes, Jira, Portal</div></div>
+              <div class="prod-check" style="color:var(--green);">✓</div>
+            </div>
+          </div>
+          <button class="sub-cta cta-premium" style="margin-top:28px;">The Long-Term Vision</button>
+        </div>
+
+      </div>
+
+      <!-- Comparison note -->
+      <div class="callout blue" style="margin-top:32px;">
+        <div class="ci">💡</div>
+        <div>
+          <h4>Why a tiered model?</h4>
+          <p>A tiered subscription model works inside Ubisoft the same way it works externally: teams adopt at the level they're ready for and grow into the platform. It also creates a clear roadmap for conversations with directors — each tier represents a concrete milestone, not just a vague "future vision." And if we ever license outside Ubisoft, the model is already there.</p>
+        </div>
+      </div>
+
+    </div><!-- /page-subscriptions -->
+
+  </main>
+
+  <footer>
+    <img
+      src="https://ubisoftaad.sharepoint.com/:i:/r/sites/QualityFoundationsTechnologyGroup-Internal/Shared%20Documents/Team%20identity,%20templates%20and%20assets/Logo/TG_QF_Logo_White.png?csf=1&web=1&e=ZWKVvQ"
+      alt="TG QF"
+      onerror="this.style.display='none'"
+    />
+  </footer>
+
+<!-- ══════════════════════════════════════════════════════════════
+     BLOOM — Clippy-style AI Agent
+══════════════════════════════════════════════════════════════ -->
+<style>
+  /* ── Bloom avatar ── */
+  #bloom-avatar {
+    position: fixed; bottom: 28px; right: 28px; z-index: 9000;
+    cursor: pointer; user-select: none;
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+  }
+  #bloom-bubble {
+    position: absolute; bottom: 88px; right: 0;
+    background: rgba(22,27,42,0.97);
+    border: 1px solid rgba(79,142,247,0.5);
+    border-radius: 14px 14px 4px 14px;
+    padding: 10px 14px;
+    font-size: 12px; color: var(--text-primary); font-family: inherit;
+    white-space: nowrap; max-width: 240px; white-space: normal;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,142,247,0.15);
+    animation: bloom-bubble-in 0.25s ease;
+    line-height: 1.5;
+  }
+  #bloom-bubble::after {
+    content: ''; position: absolute; bottom: -7px; right: 18px;
+    width: 12px; height: 12px;
+    background: rgba(22,27,42,0.97);
+    border-right: 1px solid rgba(79,142,247,0.5);
+    border-bottom: 1px solid rgba(79,142,247,0.5);
+    transform: rotate(45deg);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }
+  #bloom-bubble.hidden { display: none; }
+  @keyframes bloom-bubble-in {
+    from { opacity:0; transform: translateY(8px) scale(0.95); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+
+  /* The B logo button */
+  #bloom-btn {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(145deg, #0f1a2e, #1c2a48);
+    border: 2px solid rgba(79,142,247,0.6);
+    box-shadow: 0 0 0 0 rgba(79,142,247,0.4),
+                0 8px 24px rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    animation: bloom-float 3s ease-in-out infinite;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  #bloom-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(79,142,247,0.2), 0 12px 32px rgba(0,0,0,0.6);
+  }
+  #bloom-btn img {
+    width: 44px; height: 44px; object-fit: contain;
+    filter: brightness(0) invert(1);
+    animation: bloom-pulse 3s ease-in-out infinite;
+  }
+  /* Blink eyes (little spark dots) */
+  #bloom-blink {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; pointer-events: none;
+  }
+  #bloom-blink span {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent);
+    animation: bloom-blink 4s ease-in-out infinite;
+    box-shadow: 0 0 6px var(--accent);
+  }
+  #bloom-blink span:nth-child(2) { animation-delay: 0.12s; }
+
+  @keyframes bloom-float {
+    0%,100% { transform: translateY(0);   }
+    50%      { transform: translateY(-7px); }
+  }
+  @keyframes bloom-pulse {
+    0%,100% { filter: brightness(0) invert(1) drop-shadow(0 0 4px rgba(79,142,247,0.6)); }
+    50%      { filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(79,142,247,1)); }
+  }
+  @keyframes bloom-blink {
+    0%,45%,55%,100% { transform: scaleY(1); opacity: 1; }
+    50%             { transform: scaleY(0.1); opacity: 0.5; }
+  }
+  /* Excited bounce when chat opens */
+  #bloom-btn.excited {
+    animation: bloom-bounce 0.5s ease 0s 2, bloom-float 3s ease-in-out 1s infinite;
+  }
+  @keyframes bloom-bounce {
+    0%,100% { transform: translateY(0) scale(1); }
+    30%     { transform: translateY(-14px) scale(1.12); }
+    60%     { transform: translateY(0) scale(0.95); }
+  }
+
+  /* ── Bloom loader overlay ── */
+  .bloom-loader {
+    position: absolute; inset: 0; z-index: 50;
+    background: #070a12;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    transition: opacity 0.4s ease;
+  }
+  .bloom-loader.fade-out { opacity: 0; pointer-events: none; }
+  .bloom-loader.hidden { display: none; }
+  .bloom-loader-ring-wrap {
+    position: relative; width: 90px; height: 90px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bloom-loader-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--accent);
+    border-right-color: rgba(79,142,247,0.3);
+    animation: bloom-ring-spin 1s linear infinite;
+  }
+  .bloom-loader-ring-outer {
+    position: absolute; inset: -8px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    border-top-color: rgba(79,142,247,0.2);
+    border-bottom-color: rgba(79,142,247,0.1);
+    animation: bloom-ring-spin 1.6s linear infinite reverse;
+  }
+  @keyframes bloom-ring-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .bloom-loader-logo {
+    width: 44px; height: 44px; object-fit: contain;
+    filter: brightness(0) invert(1);
+    animation: bloom-pulse 2s ease-in-out infinite;
+  }
+  .bloom-loader-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: rgba(79,142,247,0.6);
+  }
+
+  /* ── Chat panel ── */
+  #bloom-chat {
+    position: fixed; bottom: 104px; right: 28px; z-index: 8999;
+    width: 340px;
+    background: rgba(13,16,23,0.98);
+    border: 1px solid rgba(79,142,247,0.4);
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 24px 56px rgba(0,0,0,0.65);
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: bloom-chat-in 0.25s ease;
+    max-height: 500px;
+  }
+  #bloom-chat.hidden { display: none; }
+  @keyframes bloom-chat-in {
+    from { opacity:0; transform: translateY(16px) scale(0.97); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .bloom-chat-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(15,26,46,0.9), rgba(28,42,72,0.8));
+    border-bottom: 1px solid rgba(79,142,247,0.2);
+  }
+  .bloom-chat-header .bch-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(145deg, #0f1a2e, #1c2a48);
+    border: 1px solid rgba(79,142,247,0.5);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .bloom-chat-header .bch-avatar img { width: 20px; height: 20px; object-fit: contain; filter: brightness(0) invert(1); }
+  .bloom-chat-header .bch-name { font-size: 13px; font-weight: 800; color: #fff; flex: 1; }
+  .bloom-chat-header .bch-status { font-size: 10px; color: var(--green); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .bloom-chat-header .bch-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: conn-pulse 2s infinite; }
+  .bloom-chat-header .bch-close { font-size: 16px; color: var(--text-muted); cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: color 0.15s; }
+  .bloom-chat-header .bch-close:hover { color: var(--red); }
+
+  .bloom-messages {
+    flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px;
+    scroll-behavior: smooth;
+  }
+  .bloom-messages::-webkit-scrollbar { width: 4px; }
+  .bloom-messages::-webkit-scrollbar-thumb { background: rgba(79,142,247,0.3); border-radius: 2px; }
+
+  .bloom-msg {
+    display: flex; gap: 8px; align-items: flex-end;
+  }
+  .bloom-msg.user { flex-direction: row-reverse; }
+  .bloom-msg-bubble {
+    max-width: 220px; padding: 8px 12px; border-radius: 12px;
+    font-size: 12px; line-height: 1.55;
+  }
+  .bloom-msg.bloom .bloom-msg-bubble {
+    background: rgba(79,142,247,0.12); border: 1px solid rgba(79,142,247,0.2);
+    color: var(--text-primary); border-radius: 12px 12px 12px 4px;
+  }
+  .bloom-msg.user .bloom-msg-bubble {
+    background: rgba(79,142,247,0.25); border: 1px solid rgba(79,142,247,0.4);
+    color: #fff; border-radius: 12px 12px 4px 12px;
+  }
+  .bloom-msg-avatar {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(145deg, #0f1a2e, #1c2a48);
+    border: 1px solid rgba(79,142,247,0.4);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bloom-msg-avatar img { width: 14px; height: 14px; object-fit: contain; filter: brightness(0) invert(1); }
+
+  .bloom-typing {
+    display: flex; align-items: center; gap: 4px; padding: 10px 14px;
+  }
+  .bloom-typing span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    animation: bloom-typing-dot 1.2s ease-in-out infinite;
+  }
+  .bloom-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .bloom-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bloom-typing-dot {
+    0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+    30%          { transform: translateY(-6px); opacity: 1; }
+  }
+
+  .bloom-suggestions {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 10px;
+  }
+  .bloom-suggestion {
+    font-size: 11px; padding: 4px 10px; border-radius: 14px; cursor: pointer;
+    background: rgba(79,142,247,0.08); border: 1px solid rgba(79,142,247,0.3);
+    color: var(--accent); font-family: inherit;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .bloom-suggestion:hover { background: rgba(79,142,247,0.2); }
+
+  .bloom-input-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .bloom-input-row input {
+    flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 7px 11px; font-size: 12px; font-family: inherit;
+    color: var(--text-primary); outline: none;
+    transition: border-color 0.15s;
+  }
+  .bloom-input-row input:focus { border-color: rgba(79,142,247,0.5); }
+  .bloom-input-row input::placeholder { color: var(--text-muted); }
+  .bloom-input-row button {
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    background: linear-gradient(135deg, #4f8ef7, #7b6cf7);
+    color: #fff; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.15s;
+  }
+  .bloom-input-row button:hover { opacity: 0.85; }
+</style>
+
+<!-- Bloom avatar button -->
+<div id="bloom-avatar" onclick="bloomToggle()">
+  <div id="bloom-bubble">Hi! I'm <strong>Bloom</strong> 👋<br/>Your Bloomberg Reporter AI assistant. Ask me anything!</div>
+  <div id="bloom-btn" style="position:relative;">
+    <img src="/platform/Bloomberg_Logo_Black.png" alt="Bloom"/>
+    <div id="bloom-blink"><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- Bloom chat panel -->
+<div id="bloom-chat" class="hidden">
+  <div class="bloom-chat-header">
+    <div class="bch-avatar"><img src="/platform/Bloomberg_Logo_Black.png" alt="B"/></div>
+    <div>
+      <div class="bch-name">Bloom</div>
+      <div class="bch-status">Bloomberg AI · Online</div>
+    </div>
+    <div class="bch-close" onclick="bloomClose()" title="Close">✕</div>
+  </div>
+  <div class="bloom-messages" id="bloom-msgs"></div>
+  <div class="bloom-suggestions" id="bloom-suggs">
+    <button class="bloom-suggestion" onclick="bloomAsk(this.textContent)">What is Bloomberg Reporter?</button>
+    <button class="bloom-suggestion" onclick="bloomAsk(this.textContent)">Show me the roadmap</button>
+    <button class="bloom-suggestion" onclick="bloomAsk(this.textContent)">How do I submit a report?</button>
+    <button class="bloom-suggestion" onclick="bloomAsk(this.textContent)">What's new in v7?</button>
+  </div>
+  <div class="bloom-input-row">
+    <input id="bloom-input" type="text" placeholder="Ask Bloom…" onkeydown="if(event.key==='Enter')bloomSend()"/>
+    <button onclick="bloomSend()">➤</button>
+  </div>
+</div>
+
+<script>
+// ── BLOOM state ──
+const BLOOM_GREETINGS = [
+  "Hi! I'm <strong>Bloom</strong> 👋 Your Bloomberg Reporter AI. What can I help you with?",
+  "Hey there! <strong>Bloom</strong> here — Bloomberg's AI assistant. Ask me anything about the platform!",
+  "Welcome back! I'm <strong>Bloom</strong>. Ready to help with Reporter, crashes, and more.",
+];
+const BLOOM_RESPONSES = {
+  'reporter': "Bloomberg Reporter is a defect management platform used across all Ubisoft studios. It handles crashes, occurrences, and issue routing — live on every production machine since 2006. The web version (v7) modernises the whole thing.",
+  'roadmap': "The roadmap goes: Vintage (now) → Basic with AI triage (M5) → Premium with Eagle Eye + QC Assistant (long-term). Check the <a style='color:var(--accent)' href='#' onclick=\"navigate('subscriptions');bloomClose();return false\">Subscription Plans</a> page for details.",
+  'report': "To submit a report: drag a .report or .dmp file onto the drop zone in the Reporter tab, or click 'Browse Files'. Fill in the project and issue details, then hit 'Submit'. It syncs to Jira automatically.",
+  'portal': "Bloomberg Portal is the web view for all occurrences and crashes — no client needed. Live at <span style='color:var(--accent);font-family:monospace;'>tgdp.bloom.ubisoft.org</span>. Check the <a style='color:var(--accent)' href='#' onclick=\"navigate('portal');bloomClose();return false\">Portal page</a> for a live demo.",
+  'v7': "v7 introduces the web-native interface, QA Companion AI triage integration, the unified Sent Reports panel, and real-time connection status. Legacy .exe still runs in parallel during the transition.",
+  'crash': "Crashes are auto-ingested from DevConsole and Reporter client. They appear in the Crashes tab with stack traces, platform info, and occurrence counts. AI Companion suggests root causes and duplicates.",
+  'jira': "Reporter syncs bidirectionally with Jira 153. Creating a report auto-creates a Jira issue. Status, assignee, and resolution flow both ways. The Portal URL links directly to the Jira key.",
+  'password': "The access code for this platform is known only to authorised personnel. If you're seeing this, you already got in — nice work! 😄",
+  'default': "That's a great question! I'm still learning the full Bloomberg Reporter knowledge base. Try asking about the roadmap, portal, crash handling, or Jira integration — those are my strongest areas right now. 🤓",
+};
+
+let bloomOpen = false;
+let bloomGreeted = false;
+let bloomBubbleTimer = null;
+
+function bloomGetResponse(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('reporter') || m.includes('what is')) return BLOOM_RESPONSES.reporter;
+  if (m.includes('roadmap') || m.includes('plan') || m.includes('milestone')) return BLOOM_RESPONSES.roadmap;
+  if (m.includes('submit') || m.includes('report') || m.includes('drag') || m.includes('file')) return BLOOM_RESPONSES.report;
+  if (m.includes('portal') || m.includes('web') || m.includes('occurrence')) return BLOOM_RESPONSES.portal;
+  if (m.includes('v7') || m.includes('new') || m.includes('version')) return BLOOM_RESPONSES.v7;
+  if (m.includes('crash') || m.includes('dump') || m.includes('dmp')) return BLOOM_RESPONSES.crash;
+  if (m.includes('jira') || m.includes('ticket') || m.includes('sync')) return BLOOM_RESPONSES.jira;
+  if (m.includes('password') || m.includes('code') || m.includes('access')) return BLOOM_RESPONSES.password;
+  return BLOOM_RESPONSES.default;
+}
+
+function bloomAppendMsg(text, sender) {
+  const msgs = document.getElementById('bloom-msgs');
+  const row = document.createElement('div');
+  row.className = 'bloom-msg ' + sender;
+  if (sender === 'bloom') {
+    row.innerHTML = `
+      <div class="bloom-msg-avatar"><img src="/platform/Bloomberg_Logo_Black.png" alt="B"/></div>
+      <div class="bloom-msg-bubble">${text}</div>`;
+  } else {
+    row.innerHTML = `<div class="bloom-msg-bubble">${text}</div>`;
+  }
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+  return row;
+}
+
+function bloomTypingIndicator() {
+  const msgs = document.getElementById('bloom-msgs');
+  const row = document.createElement('div');
+  row.className = 'bloom-msg bloom'; row.id = 'bloom-typing-row';
+  row.innerHTML = `
+    <div class="bloom-msg-avatar"><img src="/platform/Bloomberg_Logo_Black.png" alt="B"/></div>
+    <div class="bloom-msg-bubble" style="padding:10px 14px;">
+      <div class="bloom-typing"><span></span><span></span><span></span></div>
+    </div>`;
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function bloomAsk(text) {
+  document.getElementById('bloom-suggs').style.display = 'none';
+  bloomAppendMsg(text, 'user');
+  bloomTypingIndicator();
+  setTimeout(() => {
+    const t = document.getElementById('bloom-typing-row');
+    if (t) t.remove();
+    bloomAppendMsg(bloomGetResponse(text), 'bloom');
+  }, 700 + Math.random() * 500);
+}
+
+function bloomSend() {
+  const inp = document.getElementById('bloom-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  inp.value = '';
+  bloomAsk(val);
+}
+
+function bloomToggle() {
+  if (bloomOpen) { bloomClose(); return; }
+  bloomOpen = true;
+  const chat = document.getElementById('bloom-chat');
+  const bubble = document.getElementById('bloom-bubble');
+  const btn = document.getElementById('bloom-btn');
+  bubble.classList.add('hidden');
+  chat.classList.remove('hidden');
+  btn.classList.add('excited');
+  setTimeout(() => btn.classList.remove('excited'), 1100);
+  if (!bloomGreeted) {
+    bloomGreeted = true;
+    const g = BLOOM_GREETINGS[Math.floor(Date.now() % BLOOM_GREETINGS.length)];
+    setTimeout(() => bloomAppendMsg(g, 'bloom'), 300);
+  }
+}
+
+function bloomClose() {
+  bloomOpen = false;
+  document.getElementById('bloom-chat').classList.add('hidden');
+  // show bubble again after a moment
+  setTimeout(() => {
+    if (!bloomOpen) {
+      const b = document.getElementById('bloom-bubble');
+      b.innerHTML = "Need help? <strong>Ask Bloom!</strong> 💬";
+      b.classList.remove('hidden');
+      bloomBubbleTimer = setTimeout(() => b.classList.add('hidden'), 4000);
+    }
+  }, 500);
+}
+
+// Auto-hide bubble after 6s on load
+bloomBubbleTimer = setTimeout(() => {
+  document.getElementById('bloom-bubble').classList.add('hidden');
+}, 6000);
+</script>
+
+</div><!-- /app -->
+
+<script>
+const SESSION_KEY = 'bloomberg_platform_auth';
+const ENCODED = btoa('BlomBlomBlom');
+
+// Auto-unlock if already authenticated this session
+if (sessionStorage.getItem(SESSION_KEY) === '1') {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+}
+
+document.getElementById('gate-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkPassword();
+  document.getElementById('gate-input').classList.remove('error');
+  document.getElementById('gate-error').textContent = '';
+});
+
+function checkPassword() {
+  const val = document.getElementById('gate-input').value;
+  if (btoa(val) === ENCODED) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    navigate(readHash());
+  } else {
+    const inp = document.getElementById('gate-input');
+    inp.classList.add('error');
+    inp.value = '';
+    document.getElementById('gate-error').textContent = 'Incorrect access code. Try again.';
+    setTimeout(() => inp.classList.remove('error'), 400);
+  }
+}
+
+// ── ROUTING ──
+const VALID_PAGES = ['reporter', 'portal', 'integrations', 'subscriptions'];
+
+function readHash() {
+  const h = window.location.hash.slice(1);
+  return VALID_PAGES.includes(h) ? h : 'reporter';
+}
+
+function navigate(page) {
+  if (!VALID_PAGES.includes(page)) page = 'reporter';
+  window.history.pushState(null, '', '#' + page);
+  activatePage(page);
+}
+
+const FULLSCREEN_PAGES = new Set(['reporter', 'portal']);
+const LOADER_PAGES = { reporter: 'loader-reporter', portal: 'loader-portal' };
+const _loaderShown = new Set();
+
+function showLoader(page) {
+  const id = LOADER_PAGES[page];
+  if (!id || _loaderShown.has(page)) return;
+  _loaderShown.add(page);
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('hidden', 'fade-out');
+  setTimeout(() => {
+    el.classList.add('fade-out');
+    setTimeout(() => el.classList.add('hidden'), 420);
+  }, 1800);
+}
+
+function activatePage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('page-' + page);
+  if (el) el.classList.add('active');
+  const btn = document.querySelector(`nav button[data-page="${page}"]`);
+  if (btn) btn.classList.add('active');
+
+  const main = document.getElementById('main-content');
+  if (FULLSCREEN_PAGES.has(page)) {
+    main.classList.add('fullscreen');
+    showLoader(page);
+  } else {
+    main.classList.remove('fullscreen');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function intgToggle(checkbox, id) {
+  const row = checkbox.closest('.intg-row');
+  const badge = row.querySelector('.intg-status');
+  const wasActive = checkbox.checked;
+  if (badge.classList.contains('is-live')) return; // live connections always on
+  if (wasActive) {
+    badge.textContent = 'Active';
+    badge.className = 'intg-status is-active';
+    row.classList.remove('disabled-row');
+  } else {
+    badge.textContent = 'Inactive';
+    badge.className = 'intg-status is-config';
+    row.classList.add('disabled-row');
+  }
+}
+
+window.addEventListener('popstate', () => activatePage(readHash()));
+
+// ── INIT ──
+activatePage(readHash());
+</script>
+</body>
+</html>
