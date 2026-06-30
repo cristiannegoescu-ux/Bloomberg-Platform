@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Bloomberg Reporter Platform</title>
-<link rel="icon" type="image/png" href="/platform/Bloomberg_Logo_Black.png"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%234f8ef7'/%3E%3Cimage href='/platform/Bloomberg_Logo_Black.png' x='4' y='4' width='24' height='24' style='filter:brightness(0) invert(1)'/%3E%3C/svg%3E"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet"/>
 <style>
@@ -44,51 +44,6 @@
     opacity: 0.13; pointer-events: none; z-index: 0;
   }
 
-  /* ── PASSWORD GATE ── */
-  #gate {
-    position: fixed; inset: 0; z-index: 9999;
-    background: rgba(11,15,26,0.97);
-    backdrop-filter: blur(18px);
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 0;
-  }
-  #gate img.gate-logo { height: 44px; margin-bottom: 32px; opacity: 0.9; }
-  #gate .gate-card {
-    background: rgba(22,27,34,0.95);
-    border: 1px solid rgba(79,142,247,0.3);
-    border-radius: 16px;
-    padding: 40px 48px;
-    width: 100%; max-width: 420px;
-    box-shadow: 0 0 60px rgba(79,142,247,0.12), 0 24px 48px rgba(0,0,0,0.5);
-    text-align: center;
-  }
-  #gate .gate-icon { font-size: 36px; margin-bottom: 16px; }
-  #gate h2 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; letter-spacing: 0.01em; }
-  #gate p  { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; line-height: 1.6; }
-  #gate input {
-    width: 100%; padding: 12px 16px; font-size: 15px; font-family: inherit;
-    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text-primary); outline: none;
-    text-align: center; letter-spacing: 0.12em;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    margin-bottom: 16px;
-  }
-  #gate input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-  #gate input.error { border-color: var(--red); animation: shake 0.35s ease; }
-  #gate button {
-    width: 100%; padding: 13px; font-size: 14px; font-weight: 700; font-family: inherit;
-    background: linear-gradient(135deg, #4f8ef7, #7b6cf7);
-    border: none; border-radius: 8px; color: #fff; cursor: pointer;
-    letter-spacing: 0.04em; transition: opacity 0.15s, transform 0.1s;
-  }
-  #gate button:hover { opacity: 0.9; transform: translateY(-1px); }
-  #gate .gate-error { font-size: 12px; color: var(--red); margin-top: 10px; height: 16px; }
-
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    20%,60%  { transform: translateX(-6px); }
-    40%,80%  { transform: translateX(6px); }
-  }
 
   /* ── LAYOUT ── */
   html, body { height: 100%; }
@@ -511,25 +466,7 @@
 
 <div id="bg-overlay"></div>
 
-<!-- ══════════════════════════════════════════════════════════════
-     PASSWORD GATE
-══════════════════════════════════════════════════════════════ -->
-<div id="gate">
-  <img src="/platform/Bloomberg_Logotype_White.png" alt="Bloomberg" class="gate-logo"/>
-  <div class="gate-card">
-    <div class="gate-icon">🔒</div>
-    <h2>Bloomberg Reporter Platform</h2>
-    <p>This platform contains strategic vision content intended for directors, product managers &amp; tech leads. Enter the access code to continue.</p>
-    <input type="password" id="gate-input" placeholder="Access code" autocomplete="off"/>
-    <button onclick="checkPassword()">Unlock Platform</button>
-    <div class="gate-error" id="gate-error"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════════
-     APP
-══════════════════════════════════════════════════════════════ -->
-<div id="app" style="display:none">
+<div id="app" style="display:flex">
 
   <header>
     <img src="/platform/Bloomberg_Logotype_White.png" alt="Bloomberg" class="logo" onclick="navigate('reporter')"/>
@@ -1958,37 +1895,6 @@ bloomBubbleTimer = setTimeout(() => {
 </div><!-- /app -->
 
 <script>
-const SESSION_KEY = 'bloomberg_platform_auth';
-const ENCODED = btoa('BlomBlomBlom');
-
-// Auto-unlock if already authenticated this session
-if (sessionStorage.getItem(SESSION_KEY) === '1') {
-  document.getElementById('gate').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-}
-
-document.getElementById('gate-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') checkPassword();
-  document.getElementById('gate-input').classList.remove('error');
-  document.getElementById('gate-error').textContent = '';
-});
-
-function checkPassword() {
-  const val = document.getElementById('gate-input').value;
-  if (btoa(val) === ENCODED) {
-    sessionStorage.setItem(SESSION_KEY, '1');
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    navigate(readHash());
-  } else {
-    const inp = document.getElementById('gate-input');
-    inp.classList.add('error');
-    inp.value = '';
-    document.getElementById('gate-error').textContent = 'Incorrect access code. Try again.';
-    setTimeout(() => inp.classList.remove('error'), 400);
-  }
-}
-
 // ── ROUTING ──
 const VALID_PAGES = ['reporter', 'portal', 'integrations', 'subscriptions'];
 
