@@ -618,9 +618,8 @@
         }
         /* Content pane */
         .rapp-content { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-        /* Report workspace */
+        /* Report workspace (layout defined below in split-workspace block) */
         .rapp-workspace {
-          flex: 1; position: relative; min-height: 340px;
           background: #0b0e16;
           display: flex; flex-direction: column;
         }
@@ -656,7 +655,7 @@
         .rapp-ws-toolbar .ws-search input::placeholder { color: var(--text-muted); }
         /* Drop zone */
         .rapp-dropzone {
-          flex: 1; display: flex; flex-direction: column;
+          display: flex; flex-direction: column;
           align-items: center; justify-content: center; gap: 16px;
           border: 2px dashed rgba(79,142,247,0.2);
           margin: 20px; border-radius: 12px;
@@ -707,6 +706,112 @@
           width: 7px; height: 7px; border-radius: 50%; background: var(--purple);
           animation: conn-pulse 1.5s ease-in-out infinite;
         }
+        /* ── Split workspace ── */
+        .rapp-workspace {
+          display: flex; flex-direction: row; flex: 1; min-height: 0; overflow: hidden;
+        }
+        .rapp-report-view {
+          flex: 1; min-width: 0; display: flex; flex-direction: column;
+          border-right: 1px solid rgba(255,255,255,0.07);
+          overflow-y: auto;
+        }
+        /* Drop zone (empty state) */
+        .rapp-dropzone-wrap {
+          flex: 1; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 8px;
+          padding: 32px 24px;
+        }
+        /* Inline report card */
+        .rapp-report-card {
+          display: none; flex-direction: column; padding: 20px 22px; gap: 0;
+        }
+        .rapp-report-card.visible { display: flex; }
+        .rrc-header {
+          display: flex; align-items: center; gap: 12px;
+          padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.07);
+          margin-bottom: 16px;
+        }
+        .rrc-icon { font-size: 26px; line-height: 1; flex-shrink: 0; }
+        .rrc-title-block { flex: 1; min-width: 0; }
+        .rrc-label {
+          font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+          text-transform: uppercase; margin-bottom: 3px;
+        }
+        .rrc-title { font-size: 15px; font-weight: 800; color: #e6edf3; }
+        .rrc-id-pill {
+          font-size: 10px; font-weight: 700; font-family: 'Courier New', monospace;
+          padding: 3px 10px; border-radius: 6px; white-space: nowrap; flex-shrink: 0;
+        }
+        .rrc-dismiss {
+          background: none; border: none; color: #8b949e; font-size: 16px;
+          cursor: pointer; padding: 4px 6px; border-radius: 4px; line-height: 1;
+          flex-shrink: 0;
+        }
+        .rrc-dismiss:hover { color: #e6edf3; background: rgba(255,255,255,0.07); }
+        .rrc-meta {
+          display: grid; grid-template-columns: 110px 1fr 110px 1fr;
+          gap: 7px 14px; font-size: 12px; margin-bottom: 16px;
+        }
+        .rrc-meta-key { color: #484f58; font-weight: 700; }
+        .rrc-meta-val { color: #cdd9e5; }
+        .rrc-section-label {
+          font-size: 10px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.08em; color: #484f58; margin-bottom: 6px; margin-top: 4px;
+        }
+        .rrc-summary { font-size: 13px; color: #e6edf3; line-height: 1.6; margin-bottom: 14px; }
+        .rrc-stack {
+          background: #070a12; border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 8px; padding: 11px 14px;
+          font-family: 'Courier New', monospace; font-size: 10px;
+          line-height: 1.8; white-space: pre-wrap; word-break: break-all;
+          margin-bottom: 16px;
+        }
+        .rrc-actions { display: flex; gap: 10px; margin-top: 4px; }
+        .rrc-btn {
+          flex: 1; padding: 9px 14px; border-radius: 8px; font-size: 12px;
+          font-weight: 700; font-family: inherit; cursor: pointer;
+          transition: opacity 0.15s;
+        }
+        .rrc-btn:hover { opacity: 0.85; }
+        .rrc-btn-secondary {
+          background: transparent; border: 1px solid rgba(255,255,255,0.12); color: #8b949e;
+        }
+        .rrc-btn-primary {
+          background: linear-gradient(135deg,#4f8ef7,#7b6cf7); border: none; color: #fff;
+        }
+        /* ── History sidebar ── */
+        .rapp-history {
+          width: 224px; flex-shrink: 0; display: flex; flex-direction: column;
+          background: #0d1017; overflow: hidden;
+        }
+        .rh-header {
+          display: flex; align-items: center; gap: 8px;
+          padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.07);
+          font-size: 11px; font-weight: 700; color: var(--text-primary); flex-shrink: 0;
+        }
+        .rh-count {
+          margin-left: auto; font-size: 10px; padding: 1px 7px; border-radius: 8px;
+          background: rgba(79,142,247,0.15); color: var(--accent); font-weight: 700;
+        }
+        .rh-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+        .rh-empty {
+          flex: 1; display: flex; flex-direction: column; align-items: center;
+          justify-content: center; gap: 6px; padding: 20px;
+          color: var(--text-muted); font-size: 11px; text-align: center;
+        }
+        .rh-card {
+          padding: 10px 11px; border-radius: 8px; cursor: pointer;
+          border: 1px solid rgba(255,255,255,0.07); background: #12151e;
+          transition: border-color 0.15s, background 0.15s;
+        }
+        .rh-card:hover { background: #161b26; border-color: rgba(79,142,247,0.3); }
+        .rh-card.active { border-color: rgba(79,142,247,0.55); background: rgba(79,142,247,0.06); }
+        .rh-card-top { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+        .rh-card-icon { font-size: 13px; line-height: 1; }
+        .rh-card-id { font-size: 10px; font-weight: 700; font-family: 'Courier New', monospace; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rh-card-badge { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+        .rh-card-type { font-size: 11px; color: #cdd9e5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+        .rh-card-ts { font-size: 10px; color: var(--text-muted); }
         /* Sent reports panel */
         .rapp-sent {
           background: #0d1017;
@@ -858,31 +963,76 @@
               </div>
             </div>
 
-            <!-- Drop zone -->
+            <!-- Workspace: report view + history sidebar -->
             <div class="rapp-workspace">
-              <div class="rapp-dropzone" id="dropzone" onclick="dropzoneClick()">
-                <!-- Bloom icon — static, no circle -->
-                <img src="/platform/Bloomberg_Logo_Black.png" alt="Bloom" style="
-                  width:56px;height:56px;object-fit:contain;flex-shrink:0;
-                  filter:brightness(0) invert(1);
-                  animation:bloom-pulse 3s ease-in-out infinite;
-                "/>
-                <h3>Drop a report file here</h3>
-                <p>Drag &amp; drop a .report, .dmp or .zip file to create a new report, or use the button below to browse your machine.</p>
-                <div class="dz-formats">
-                  <span class="dz-fmt">.report</span>
-                  <span class="dz-fmt">.dmp</span>
-                  <span class="dz-fmt">.zip</span>
-                  <span class="dz-fmt">.rpt</span>
+
+              <!-- Left: main report view -->
+              <div class="rapp-report-view" id="report-view">
+
+                <!-- Empty state (drop zone) -->
+                <div class="rapp-dropzone-wrap" id="dropzone-state">
+                  <div class="rapp-dropzone" id="dropzone" onclick="dropzoneClick()" style="width:100%;max-width:480px;">
+                    <img src="/platform/Bloomberg_Logo_Black.png" alt="Bloom" style="
+                      width:56px;height:56px;object-fit:contain;flex-shrink:0;
+                      filter:brightness(0) invert(1);
+                      animation:bloom-pulse 3s ease-in-out infinite;
+                    "/>
+                    <h3>Drop a report file here</h3>
+                    <p>Drag &amp; drop a .report, .dmp or .zip file, or wait for Bloom AI to submit a crash report automatically.</p>
+                    <div class="dz-formats">
+                      <span class="dz-fmt">.report</span>
+                      <span class="dz-fmt">.dmp</span>
+                      <span class="dz-fmt">.zip</span>
+                      <span class="dz-fmt">.rpt</span>
+                    </div>
+                    <div class="dz-or">— or —</div>
+                    <button class="dz-btn">Browse Files</button>
+                  </div>
+                  <div class="rapp-ai-chip" title="QA Companion is active">
+                    <div class="ai-dot"></div>
+                    QA Companion · AI Triage Active
+                  </div>
                 </div>
-                <div class="dz-or">— or —</div>
-                <button class="dz-btn">Browse Files</button>
+
+                <!-- Active report card (inline, no modal) -->
+                <div class="rapp-report-card" id="report-card">
+                  <div class="rrc-header">
+                    <div class="rrc-icon" id="rrc-icon">💥</div>
+                    <div class="rrc-title-block">
+                      <div class="rrc-label" id="rrc-label">CRITICAL CRASH · BLOOM QA AGENT</div>
+                      <div class="rrc-title" id="rrc-title">Unknown Error</div>
+                    </div>
+                    <div class="rrc-id-pill" id="rrc-id-pill">CRASH-0001</div>
+                    <button class="rrc-dismiss" onclick="reportCardDismiss()" title="Close report">✕</button>
+                  </div>
+                  <div class="rrc-meta" id="rrc-meta"></div>
+                  <div class="rrc-section-label">Summary</div>
+                  <div class="rrc-summary" id="rrc-summary"></div>
+                  <div class="rrc-section-label" id="rrc-stack-label">Call Stack</div>
+                  <pre class="rrc-stack" id="rrc-stack"></pre>
+                  <div class="rrc-actions">
+                    <button class="rrc-btn rrc-btn-secondary" onclick="reportCardDismiss()">Dismiss</button>
+                    <button class="rrc-btn rrc-btn-primary" id="rrc-add-btn">Add to Sent Reports</button>
+                  </div>
+                </div>
+
+              </div><!-- /report-view -->
+
+              <!-- Right: history sidebar -->
+              <div class="rapp-history">
+                <div class="rh-header">
+                  📋 Crash History
+                  <span class="rh-count" id="rh-count">0</span>
+                </div>
+                <div class="rh-list" id="rh-list">
+                  <div class="rh-empty" id="rh-empty">
+                    <div style="font-size:22px;">📭</div>
+                    No reports yet.<br/>Run the Bloom Game<br/>and press <strong>S</strong> or <strong>F</strong>.
+                  </div>
+                </div>
               </div>
-              <div class="rapp-ai-chip" title="QA Companion is active">
-                <div class="ai-dot"></div>
-                QA Companion · AI Triage Active
-              </div>
-            </div>
+
+            </div><!-- /rapp-workspace -->
 
             <!-- Sent Reports panel -->
             <div class="rapp-sent">
@@ -991,123 +1141,180 @@
       </div><!-- /rapp -->
 
       <script>
+        // ── Sent reports panel toggle ─────────────────────────────────────────
         function toggleSent(header) {
-          const wrap = document.getElementById('sent-table-wrap');
+          const wrap  = document.getElementById('sent-table-wrap');
           const arrow = header.querySelector('.sh-arrow');
           const isOpen = arrow.classList.contains('open');
           wrap.style.display = isOpen ? 'none' : 'block';
           arrow.classList.toggle('open', !isOpen);
           arrow.textContent = isOpen ? '▼' : '▲';
         }
+
         function dropzoneClick() {
           const dz = document.getElementById('dropzone');
           dz.style.borderColor = 'rgba(79,142,247,0.7)';
           dz.style.background  = 'rgba(79,142,247,0.08)';
-          setTimeout(() => {
-            dz.style.borderColor = '';
-            dz.style.background  = '';
-          }, 600);
+          setTimeout(() => { dz.style.borderColor = ''; dz.style.background = ''; }, 600);
         }
 
-        // ── Bloom crash/defect report modal injected by Bloom Assistant ──────
+        // ── Report history store ──────────────────────────────────────────────
+        const _reportHistory = [];
+        let   _activeReportId = null;
+
+        function _accentOf(isCrash) { return isCrash ? '#f85149' : '#e8c84a'; }
+        function _rgbOf(isCrash)    { return isCrash ? '248,81,73' : '210,153,34'; }
+
+        // ── Render a report into the inline card ──────────────────────────────
+        function _renderReportCard(defect) {
+          const isCrash = defect.isCrash;
+          const accent  = _accentOf(isCrash);
+          const ts      = defect.timestamp || '—';
+
+          document.getElementById('dropzone-state').style.display = 'none';
+          const card = document.getElementById('report-card');
+          card.classList.add('visible');
+
+          document.getElementById('rrc-icon').textContent  = isCrash ? '💥' : '🐛';
+          document.getElementById('rrc-label').textContent = (isCrash ? 'Critical Crash' : 'Defect Detected') + ' · Bloom QA Agent';
+          document.getElementById('rrc-label').style.color = accent;
+          document.getElementById('rrc-title').textContent = defect.type || 'Unknown Error';
+
+          const pill = document.getElementById('rrc-id-pill');
+          pill.textContent = defect.id || '—';
+          pill.style.color = accent;
+          pill.style.background = `rgba(${_rgbOf(isCrash)},0.1)`;
+          pill.style.border = `1px solid rgba(${_rgbOf(isCrash)},0.3)`;
+
+          const meta = document.getElementById('rrc-meta');
+          meta.innerHTML = `
+            <span class="rrc-meta-key">Severity</span>   <span class="rrc-meta-val" style="color:${accent};font-weight:700;">${defect.severity||'Critical'}</span>
+            <span class="rrc-meta-key">Component</span>  <span class="rrc-meta-val">${defect.component||'GameEngine'}</span>
+            <span class="rrc-meta-key">Session</span>    <span class="rrc-meta-val" style="font-family:monospace;font-size:10px;">${defect.session||'—'}</span>
+            <span class="rrc-meta-key">Score</span>      <span class="rrc-meta-val">${defect.score!=null ? defect.score+' pts' : '—'}</span>
+            <span class="rrc-meta-key">Timestamp</span>  <span class="rrc-meta-val" style="font-family:monospace;font-size:10px;">${ts}</span>
+            <span class="rrc-meta-key">Source</span>     <span class="rrc-meta-val" style="color:#4f8ef7;font-weight:600;">Bloom Snake · QC Demo</span>
+          `;
+
+          document.getElementById('rrc-summary').textContent = defect.summary || '—';
+
+          const stackEl    = document.getElementById('rrc-stack');
+          const stackLabel = document.getElementById('rrc-stack-label');
+          if (defect.stack) {
+            stackEl.textContent = defect.stack;
+            stackEl.style.color = accent;
+            stackEl.style.display = 'block';
+            stackLabel.style.display = 'block';
+          } else {
+            stackEl.style.display = 'none';
+            stackLabel.style.display = 'none';
+          }
+
+          // Wire up Add to Sent Reports button
+          const addBtn = document.getElementById('rrc-add-btn');
+          addBtn.onclick = function() { _addToSentReports(defect); reportCardDismiss(); };
+
+          _activeReportId = defect.id;
+          _refreshHistoryActive();
+          // Scroll report view to top
+          document.getElementById('report-view').scrollTop = 0;
+        }
+
+        function reportCardDismiss() {
+          document.getElementById('report-card').classList.remove('visible');
+          document.getElementById('dropzone-state').style.display = '';
+          _activeReportId = null;
+          _refreshHistoryActive();
+        }
+
+        // ── Add to Sent Reports table ─────────────────────────────────────────
+        function _addToSentReports(defect) {
+          const tbl = document.getElementById('sent-table-wrap');
+          if (!tbl) return;
+          const d = new Date();
+          const fmt = (d) => d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+          const typeSpan = defect.isCrash
+            ? '<span class="td-type-exc">Crash</span>'
+            : '<span class="td-type-bug">Defect</span>';
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="td-remove" onclick="this.closest('tr').remove()">✕</td>
+            <td>${fmt(d)}</td>
+            <td>BloomSnakeQC</td>
+            <td><a class="td-key">${defect.id||'—'}</a></td>
+            <td><a class="td-key">${defect.id||'—'}</a></td>
+            <td class="td-status-sent">Sent</td>
+            <td>${typeSpan}</td>
+            <td>${fmt(d)}</td>
+            <td style="color:var(--text-muted);">Bloom AI</td>
+          `;
+          const tbody = tbl.querySelector('tbody');
+          if (tbody) tbody.prepend(row);
+          // Update status bar count
+          const countEl = document.querySelector('.rapp-statusbar .sb-item:nth-child(2)');
+          if (countEl) {
+            const n = (tbl.querySelectorAll('tbody tr').length);
+            countEl.textContent = n + ' report' + (n !== 1 ? 's' : '') + ' sent';
+          }
+          // Update sent header count
+          const shCount = document.querySelector('.sh-count');
+          if (shCount) shCount.textContent = tbl.querySelectorAll('tbody tr').length;
+        }
+
+        // ── History sidebar ───────────────────────────────────────────────────
+        function _addToHistory(defect) {
+          _reportHistory.unshift(defect); // newest first
+          _rebuildHistorySidebar();
+        }
+
+        function _rebuildHistorySidebar() {
+          const list    = document.getElementById('rh-list');
+          const empty   = document.getElementById('rh-empty');
+          const counter = document.getElementById('rh-count');
+          counter.textContent = _reportHistory.length;
+
+          if (_reportHistory.length === 0) {
+            empty.style.display = '';
+            return;
+          }
+          empty.style.display = 'none';
+
+          // Remove old cards (keep empty div)
+          list.querySelectorAll('.rh-card').forEach(c => c.remove());
+
+          _reportHistory.forEach((d, i) => {
+            const isCrash = d.isCrash;
+            const accent  = _accentOf(isCrash);
+            const badgeBg = isCrash ? 'rgba(248,81,73,0.15)' : 'rgba(210,153,34,0.15)';
+            const card = document.createElement('div');
+            card.className = 'rh-card' + (_activeReportId === d.id ? ' active' : '');
+            card.dataset.reportId = d.id;
+            card.innerHTML = `
+              <div class="rh-card-top">
+                <span class="rh-card-icon">${isCrash ? '💥' : '🐛'}</span>
+                <span class="rh-card-id" style="color:${accent};">${d.id||'—'}</span>
+                <span class="rh-card-badge" style="color:${accent};background:${badgeBg};">${isCrash?'Crash':'Defect'}</span>
+              </div>
+              <div class="rh-card-type">${d.type||'Unknown'}</div>
+              <div class="rh-card-ts">${(d.timestamp||'').slice(0,16)}</div>
+            `;
+            card.addEventListener('click', () => _renderReportCard(d));
+            list.appendChild(card);
+          });
+        }
+
+        function _refreshHistoryActive() {
+          document.querySelectorAll('.rh-card').forEach(c => {
+            c.classList.toggle('active', c.dataset.reportId === _activeReportId);
+          });
+        }
+
+        // ── bloomShowReport — called by Bloom Assistant via executeJavaScript ─
         window.bloomShowReport = function(defect) {
-          // Navigate to reporter tab first
           if (typeof navigate === 'function') navigate('reporter');
-
-          const existing = document.getElementById('bloom-report-modal');
-          if (existing) existing.remove();
-
-          const isCrash  = defect.isCrash;
-          const accent   = isCrash ? '#f85149' : '#e8c84a';
-          const label    = isCrash ? 'CRITICAL CRASH' : 'DEFECT DETECTED';
-          const icon     = isCrash ? '💥' : '🐛';
-          const stack    = defect.stack || '';
-          const ts       = defect.timestamp || new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
-
-          const modal = document.createElement('div');
-          modal.id = 'bloom-report-modal';
-          modal.style.cssText = `
-            position:fixed;inset:0;z-index:9999;
-            display:flex;align-items:center;justify-content:center;
-            background:rgba(7,10,18,0.82);backdrop-filter:blur(4px);
-          `;
-          modal.innerHTML = `
-            <div style="
-              background:#12151e;border:1px solid rgba(${isCrash?'248,81,73':'210,153,34'},0.35);
-              border-radius:14px;width:600px;max-width:95vw;max-height:90vh;
-              display:flex;flex-direction:column;overflow:hidden;
-              box-shadow:0 32px 80px rgba(0,0,0,0.7);
-            ">
-              <!-- Header -->
-              <div style="display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.07);background:#0d1017;flex-shrink:0;">
-                <div style="font-size:28px;">${icon}</div>
-                <div style="flex:1;">
-                  <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:${accent};text-transform:uppercase;">${label} · Bloom QA Agent</div>
-                  <div style="font-size:16px;font-weight:800;color:#e6edf3;margin-top:2px;">${defect.type || 'Unknown Error'}</div>
-                </div>
-                <div style="
-                  font-size:11px;font-weight:700;font-family:monospace;
-                  color:${accent};background:rgba(${isCrash?'248,81,73':'210,153,34'},0.1);
-                  border:1px solid rgba(${isCrash?'248,81,73':'210,153,34'},0.3);
-                  padding:4px 10px;border-radius:6px;
-                ">${defect.id || 'CRASH-0001'}</div>
-                <button onclick="document.getElementById('bloom-report-modal').remove()" style="
-                  background:none;border:none;color:#8b949e;font-size:18px;cursor:pointer;
-                  padding:4px 6px;border-radius:4px;line-height:1;margin-left:4px;
-                " title="Close">✕</button>
-              </div>
-              <!-- Body -->
-              <div style="padding:20px;overflow-y:auto;flex:1;">
-                <!-- Meta grid -->
-                <div style="display:grid;grid-template-columns:120px 1fr 120px 1fr;gap:8px 16px;font-size:12px;margin-bottom:18px;">
-                  <span style="color:#484f58;font-weight:700;">Severity</span>  <span style="color:${accent};font-weight:700;">${defect.severity||'Critical'}</span>
-                  <span style="color:#484f58;font-weight:700;">Component</span> <span style="color:#cdd9e5;">${defect.component||'GameEngine'}</span>
-                  <span style="color:#484f58;font-weight:700;">Session</span>    <span style="color:#cdd9e5;font-family:monospace;font-size:10px;">${defect.session||'—'}</span>
-                  <span style="color:#484f58;font-weight:700;">Score</span>      <span style="color:#cdd9e5;">${defect.score!=null?defect.score+' pts':'—'}</span>
-                  <span style="color:#484f58;font-weight:700;">Timestamp</span> <span style="color:#cdd9e5;font-family:monospace;font-size:10px;">${ts}</span>
-                  <span style="color:#484f58;font-weight:700;">Source</span>    <span style="color:#4f8ef7;font-weight:600;">Bloom Snake · QC Demo</span>
-                </div>
-                <!-- Summary -->
-                <div style="color:#484f58;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Summary</div>
-                <div style="font-size:13px;color:#e6edf3;margin-bottom:16px;line-height:1.5;">${defect.summary||'No summary available.'}</div>
-                ${stack ? `
-                <!-- Call Stack -->
-                <div style="color:#484f58;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Call Stack</div>
-                <pre style="
-                  background:#070a12;border:1px solid rgba(255,255,255,0.07);border-radius:8px;
-                  padding:12px 14px;font-family:'Courier New',monospace;font-size:10px;
-                  color:${accent};line-height:1.8;white-space:pre-wrap;word-break:break-all;margin:0 0 0 0;
-                ">${stack}</pre>
-                ` : ''}
-              </div>
-              <!-- Footer -->
-              <div style="display:flex;gap:10px;padding:16px 20px;border-top:1px solid rgba(255,255,255,0.07);background:#0d1017;flex-shrink:0;">
-                <button onclick="document.getElementById('bloom-report-modal').remove()" style="
-                  flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);
-                  background:transparent;color:#8b949e;font-size:12px;font-weight:700;
-                  font-family:inherit;cursor:pointer;
-                ">Dismiss</button>
-                <button onclick="
-                  const t=document.getElementById('bloom-report-modal');
-                  const tbl=document.getElementById('sent-table-wrap');
-                  if(tbl){
-                    const d=new Date();
-                    const row=document.createElement('tr');
-                    row.innerHTML='<td class=\\'td-remove\\'>✕</td><td>'+d.toLocaleDateString()+' '+d.toLocaleTimeString()+'</td><td>BloomSnakeQC</td><td><a class=\\'td-key\\'>'+('${defect.id||'CRASH-0001'}')+'</a></td><td><a class=\\'td-key\\'>'+('${defect.id||'CRASH-0001'}')+'</a></td><td class=\\'td-status-sent\\'>Sent</td><td><span class=\\'td-type-exc\\'>Crash</span></td><td>'+d.toLocaleDateString()+' '+d.toLocaleTimeString()+'</td><td style=\\'color:var(--text-muted);\\'>Bloom AI</td>';
-                    const tbody=tbl.querySelector('tbody');if(tbody)tbody.prepend(row);
-                  }
-                  if(t)t.remove();
-                " style="
-                  flex:2;padding:10px;border-radius:8px;border:none;
-                  background:linear-gradient(135deg,#4f8ef7,#7b6cf7);
-                  color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;
-                ">Add to Sent Reports</button>
-              </div>
-            </div>
-          `;
-
-          document.body.appendChild(modal);
-          modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+          defect.timestamp = defect.timestamp || new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
+          _addToHistory(defect);
+          _renderReportCard(defect);
         };
       </script>
 
