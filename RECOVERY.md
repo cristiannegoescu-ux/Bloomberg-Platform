@@ -30,6 +30,29 @@ gh auth login
 
 ---
 
+## Platform features
+
+- **No access gate** — opens directly, no password required
+- **Blue circle favicon** with Bloomberg B logo
+- **Pages:** Reporter, Portal, Integrations, Subscription Plans
+- **Reporter page** includes `bloomShowReport(data)` — a JS function callable from
+  Bloom Assistant via `executeJavaScript` to display a crash/defect modal
+- **Crash modal** shows: ID, Type, Severity, Session, Timestamp, Score, Summary,
+  Call Stack — with "Add to Sent Reports" button
+
+### Bloom AI integration (crash report injection)
+
+When Bloom Assistant receives a crash/defect from the Game Client, it calls:
+```js
+window.bloomShowReport({
+  id, type, severity, component, session, score,
+  summary, stack, timestamp, isCrash
+})
+```
+This renders a full-screen modal on the Reporter page. No page reload required.
+
+---
+
 ## Restore from scratch (new PC or after disk loss)
 
 ```powershell
