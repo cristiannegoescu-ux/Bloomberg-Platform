@@ -5,7 +5,7 @@
 | Item | Value |
 |------|-------|
 | Platform URL | http://localhost/platform |
-| Platform URL (port) | http://localhost:80/platform |
+| Platform URL (LAN) | http://10.18.68.179/platform/#reporter |
 | Served by | `jira-dashboard` PM2 process (port 80) |
 | Platform files | `C:\Users\cnegoescu\bloomberg-platform\public\` |
 | Main file | `C:\Users\cnegoescu\bloomberg-platform\public\index.html` |
@@ -35,21 +35,57 @@ gh auth login
 - **No access gate** — opens directly, no password required
 - **Blue circle favicon** with Bloomberg B logo
 - **Pages:** Reporter, Portal, Integrations, Subscription Plans
-- **Reporter page** includes `bloomShowReport(data)` — a JS function callable from
-  Bloom Assistant via `executeJavaScript` to display a crash/defect modal
-- **Crash modal** shows: ID, Type, Severity, Session, Timestamp, Score, Summary,
-  Call Stack — with "Add to Sent Reports" button
+- **Bloom AI chat widget** — bottom-right floating assistant
 
-### Bloom AI integration (crash report injection)
+### Reporter page
 
-When Bloom Assistant receives a crash/defect from the Game Client, it calls:
-```js
-window.bloomShowReport({
-  id, type, severity, component, session, score,
-  summary, stack, timestamp, isCrash
-})
+- **Inline report card** — shows crash/defect injected by Bloom Assistant
+- **Call Stack** — displayed in report card
+- **Screenshot** — game canvas screenshot attached to each report
+- **History sidebar** — all received reports, each deletable with ✕
+- **Sent Reports table** — persisted to localStorage, survives page reload
+  - Each row is deletable with ✕
+  - Click the ID link to open a full detail modal (stack + screenshot)
+- **Drag-and-drop .dmp** — drop a `.bloom.dmp` file onto the report area to
+  generate a report card from file (screenshot included if present)
+
+### Bloom AI integration — crash report injection flow
+
 ```
-This renders a full-screen modal on the Reporter page. No page reload required.
+Game (S/F key)
+  → POST http://127.0.0.1:3333/defect   (JSON with screenshot, stack, metadata)
+  → Bloom Assistant main.js
+      → stores pendingReport
+      → shows toast notification (dark card, no flash, non-clickable)
+      → widget turns red with badge count
+  → User clicks Bloom widget
+      → dismisses toast
+      → opens Platform window
+      → sends 'show-report' IPC to preload.js
+      → preload dispatches CustomEvent 'bloom-show-report' on window
+      → page bloomShowReport() renders inline report card + history entry
+```
+
+Bloom Assistant injects via `preload.js` using a `CustomEvent` that crosses the
+`contextIsolation` boundary — direct `window.bloomShowReport()` calls from the
+preload do NOT work because the preload and page have separate window objects.
+
+Payload shape sent by the game:
+```json
+{
+  "id":         "CRASH-0001",
+  "type":       "Access Violation",
+  "severity":   "Critical",
+  "component":  "GameEngine",
+  "summary":    "Access violation — read from null pointer at 0x00000000",
+  "session":    "ABC123",
+  "score":      80,
+  "stack":      "AccessViolation: 0x00000000\n  at MemoryManager.read() :88",
+  "timestamp":  "2026-06-30 09:14:02 UTC",
+  "isCrash":    true,
+  "screenshot": "data:image/png;base64,..."
+}
+```
 
 ---
 
@@ -124,7 +160,7 @@ pm2 restart jira-dashboard
 | `jira-dashboard` | 80 | Reporter Workspace (`/`) + Platform (`/platform`) | bloomberg-reporter-next-dashboard |
 | `bloomberg-platform` | 3001 | Platform standalone (not used in prod) | bloomberg-platform |
 
-> **Note:** In production the platform is served by `jira-dashboard` at `/platform/`.  
+> **Note:** In production the platform is served by `jira-dashboard` at `/platform/`.
 > The `bloomberg-platform` PM2 process is a standalone fallback only.
 
 ---

@@ -1010,6 +1010,10 @@
                   <div class="rrc-summary" id="rrc-summary"></div>
                   <div class="rrc-section-label" id="rrc-stack-label">Call Stack</div>
                   <pre class="rrc-stack" id="rrc-stack"></pre>
+                  <div class="rrc-section-label" id="rrc-screenshot-label" style="display:none">Screenshot</div>
+                  <div id="rrc-screenshot-wrap" style="display:none;margin-bottom:16px;">
+                    <img id="rrc-screenshot-img" style="max-width:100%;border-radius:6px;border:1px solid rgba(255,255,255,0.08);" src="" alt="Game screenshot"/>
+                  </div>
                   <div class="rrc-actions">
                     <button class="rrc-btn rrc-btn-secondary" onclick="reportCardDismiss()">Dismiss</button>
                     <button class="rrc-btn rrc-btn-primary" id="rrc-add-btn">Add to Sent Reports</button>
@@ -1158,6 +1162,164 @@
           setTimeout(() => { dz.style.borderColor = ''; dz.style.background = ''; }, 600);
         }
 
+        // ── Drag-and-drop .dmp parsing ────────────────────────────────────────
+        function _parseDmpFile(file) {
+          const reader = new FileReader();
+          reader.onload = ev => {
+            try {
+              const obj = JSON.parse(ev.target.result);
+              const defect = {
+                id:         obj.id        || 'CRASH-0000',
+                type:       obj.type      || 'Unknown',
+                severity:   obj.severity  || 'Critical',
+                component:  obj.component || 'GameEngine',
+                summary:    obj.summary   || 'Crash imported from .dmp file',
+                session:    obj.session   || '—',
+                score:      obj.score     || 0,
+                timestamp:  obj.timestamp || new Date().toISOString(),
+                stack:      obj.stack     || '',
+                screenshot: obj.screenshot || null,
+                isCrash:    true,
+                source:     '.dmp import',
+              };
+              _addToHistory(defect);
+              _renderReportCard(defect);
+            } catch(err) {
+              alert('Could not parse .dmp file: ' + err.message);
+            }
+          };
+          reader.readAsText(file);
+        }
+
+        // Attach drag-and-drop to the whole report-view area so it works even when
+        // the dropzone element is partially covered or repositioned
+        (function() {
+          const area = document.getElementById('report-view') || document.body;
+          area.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            const dz = document.getElementById('dropzone');
+            if (dz) dz.style.borderColor = 'rgba(79,142,247,0.8)';
+          });
+          area.addEventListener('dragleave', e => {
+            if (!area.contains(e.relatedTarget)) {
+              const dz = document.getElementById('dropzone');
+              if (dz) dz.style.borderColor = '';
+            }
+          });
+          area.addEventListener('drop', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            const dz = document.getElementById('dropzone');
+            if (dz) dz.style.borderColor = '';
+            const file = e.dataTransfer.files[0];
+            if (!file) return;
+            _parseDmpFile(file);
+          });
+        })();
+
+        // ── Sent Reports localStorage persistence ─────────────────────────────
+        const LS_KEY = 'bloom_sent_reports';
+        let _sentReports = [];
+        try { _sentReports = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch(e) { _sentReports = []; }
+
+        function _saveSentReports() {
+          try { localStorage.setItem(LS_KEY, JSON.stringify(_sentReports)); } catch(e) {}
+        }
+
+        function _deleteSentReport(idx) {
+          _sentReports.splice(idx, 1);
+          _saveSentReports();
+          _rebuildSentReports();
+        }
+
+        function _rebuildSentReports() {
+          const tbl = document.getElementById('sent-table-wrap');
+          if (!tbl) return;
+          const tbody = tbl.querySelector('tbody');
+          if (!tbody) return;
+          // Keep static demo rows (those without data-bloom-idx attribute), rebuild dynamic ones
+          const staticRows = Array.from(tbody.querySelectorAll('tr:not([data-bloom-idx])'));
+          // Remove all dynamic rows
+          Array.from(tbody.querySelectorAll('tr[data-bloom-idx]')).forEach(r => r.remove());
+          // Re-prepend dynamic rows (newest first — _sentReports[0] is newest)
+          _sentReports.forEach((s, i) => {
+            const row = _buildSentRow(s, i);
+            tbody.prepend(row);
+          });
+          _updateSentCount();
+        }
+
+        function _buildSentRow(s, idx) {
+          const typeSpan = s.isCrash
+            ? '<span class="td-type-exc">Crash</span>'
+            : '<span class="td-type-bug">Defect</span>';
+          const row = document.createElement('tr');
+          row.dataset.bloomIdx = idx;
+          row.innerHTML = `
+            <td class="td-remove">✕</td>
+            <td>${s.sentAt||s.timestamp||'—'}</td>
+            <td>BloomSnakeQC</td>
+            <td><a class="td-key" style="cursor:pointer">${s.id||'—'}</a></td>
+            <td><a class="td-key" style="cursor:pointer">${s.id||'—'}</a></td>
+            <td class="td-status-sent">Sent</td>
+            <td>${typeSpan}</td>
+            <td>${s.sentAt||s.timestamp||'—'}</td>
+            <td style="color:var(--text-muted);">Bloom AI</td>
+          `;
+          row.querySelector('.td-remove').addEventListener('click', () => _deleteSentReport(idx));
+          row.querySelector('.td-key').addEventListener('click', () => _openSentModal(s));
+          return row;
+        }
+
+        function _updateSentCount() {
+          const tbl = document.getElementById('sent-table-wrap');
+          if (!tbl) return;
+          const n = tbl.querySelectorAll('tbody tr').length;
+          const countEl = document.querySelector('.rapp-statusbar .sb-item:nth-child(2)');
+          if (countEl) countEl.textContent = n + ' report' + (n !== 1 ? 's' : '') + ' sent';
+          const shCount = document.querySelector('.sh-count');
+          if (shCount) shCount.textContent = n;
+        }
+
+        // ── Sent Report detail modal ──────────────────────────────────────────
+        function _openSentModal(defect) {
+          const accent = _accentOf(defect.isCrash);
+          let screenshotHtml = '';
+          if (defect.screenshot) {
+            screenshotHtml = `<div style="margin-top:16px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Screenshot</div><img src="${defect.screenshot}" style="max-width:100%;border-radius:6px;border:1px solid rgba(255,255,255,0.08)"/></div>`;
+          }
+          let stackHtml = '';
+          if (defect.stack) {
+            stackHtml = `<div style="margin-top:16px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Call Stack</div><pre style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:12px 14px;font-size:11px;color:${accent};white-space:pre-wrap;word-break:break-all;overflow-x:auto;">${String(defect.stack).replace(/</g,'&lt;')}</pre></div>`;
+          }
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;';
+          overlay.innerHTML = `
+            <div style="background:#161b2e;border:1px solid rgba(255,255,255,0.1);border-radius:12px;width:100%;max-width:640px;max-height:80vh;overflow-y:auto;padding:28px 28px 24px;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;">
+                <div>
+                  <div style="font-size:10px;font-weight:700;color:${accent};text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">${defect.isCrash ? 'Critical Crash' : 'Defect'} · Bloom QA Agent</div>
+                  <div style="font-size:20px;font-weight:700;color:#fff;">${(defect.type||'Unknown').replace(/</g,'&lt;')}</div>
+                </div>
+                <div id="__bloom_modal_close__" style="cursor:pointer;font-size:18px;color:#666;padding:4px 8px;border-radius:4px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#666'">✕</div>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);line-height:1.8;display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;margin-bottom:16px">
+                <span style="color:#555">ID</span><span style="font-family:monospace;color:${accent}">${defect.id||'—'}</span>
+                <span style="color:#555">Severity</span><span style="font-weight:700;color:${accent}">${defect.severity||'—'}</span>
+                <span style="color:#555">Component</span><span>${defect.component||'—'}</span>
+                <span style="color:#555">Session</span><span style="font-family:monospace;font-size:11px">${defect.session||'—'}</span>
+                <span style="color:#555">Timestamp</span><span style="font-family:monospace;font-size:11px">${defect.timestamp||'—'}</span>
+              </div>
+              <div style="font-size:13px;color:var(--text-primary);line-height:1.6;padding:12px 14px;background:rgba(0,0,0,0.3);border-radius:6px;border-left:3px solid ${accent};">${(defect.summary||'').replace(/</g,'&lt;')}</div>
+              ${stackHtml}
+              ${screenshotHtml}
+            </div>`;
+          overlay.querySelector('#__bloom_modal_close__').addEventListener('click', () => overlay.remove());
+          overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+          document.body.appendChild(overlay);
+        }
+
         // ── Report history store ──────────────────────────────────────────────
         const _reportHistory = [];
         let   _activeReportId = null;
@@ -1210,6 +1372,19 @@
             stackLabel.style.display = 'none';
           }
 
+          // Screenshot
+          const screenshotWrap  = document.getElementById('rrc-screenshot-wrap');
+          const screenshotLabel = document.getElementById('rrc-screenshot-label');
+          const screenshotImg   = document.getElementById('rrc-screenshot-img');
+          if (defect.screenshot) {
+            screenshotImg.src = defect.screenshot;
+            screenshotWrap.style.display  = 'block';
+            screenshotLabel.style.display = 'block';
+          } else {
+            screenshotWrap.style.display  = 'none';
+            screenshotLabel.style.display = 'none';
+          }
+
           // Wire up Add to Sent Reports button
           const addBtn = document.getElementById('rrc-add-btn');
           addBtn.onclick = function() { _addToSentReports(defect); reportCardDismiss(); };
@@ -1229,36 +1404,11 @@
 
         // ── Add to Sent Reports table ─────────────────────────────────────────
         function _addToSentReports(defect) {
-          const tbl = document.getElementById('sent-table-wrap');
-          if (!tbl) return;
           const d = new Date();
-          const fmt = (d) => d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-          const typeSpan = defect.isCrash
-            ? '<span class="td-type-exc">Crash</span>'
-            : '<span class="td-type-bug">Defect</span>';
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td class="td-remove" onclick="this.closest('tr').remove()">✕</td>
-            <td>${fmt(d)}</td>
-            <td>BloomSnakeQC</td>
-            <td><a class="td-key">${defect.id||'—'}</a></td>
-            <td><a class="td-key">${defect.id||'—'}</a></td>
-            <td class="td-status-sent">Sent</td>
-            <td>${typeSpan}</td>
-            <td>${fmt(d)}</td>
-            <td style="color:var(--text-muted);">Bloom AI</td>
-          `;
-          const tbody = tbl.querySelector('tbody');
-          if (tbody) tbody.prepend(row);
-          // Update status bar count
-          const countEl = document.querySelector('.rapp-statusbar .sb-item:nth-child(2)');
-          if (countEl) {
-            const n = (tbl.querySelectorAll('tbody tr').length);
-            countEl.textContent = n + ' report' + (n !== 1 ? 's' : '') + ' sent';
-          }
-          // Update sent header count
-          const shCount = document.querySelector('.sh-count');
-          if (shCount) shCount.textContent = tbl.querySelectorAll('tbody tr').length;
+          const fmt = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+          _sentReports.unshift({ ...defect, sentAt: fmt });
+          _saveSentReports();
+          _rebuildSentReports();
         }
 
         // ── History sidebar ───────────────────────────────────────────────────
@@ -1294,10 +1444,17 @@
                 <span class="rh-card-icon">${isCrash ? '💥' : '🐛'}</span>
                 <span class="rh-card-id" style="color:${accent};">${d.id||'—'}</span>
                 <span class="rh-card-badge" style="color:${accent};background:${badgeBg};">${isCrash?'Crash':'Defect'}</span>
+                <span class="rh-card-del" title="Remove" style="margin-left:auto;font-size:11px;color:#484f58;cursor:pointer;padding:1px 4px;border-radius:3px;line-height:1;">✕</span>
               </div>
               <div class="rh-card-type">${d.type||'Unknown'}</div>
               <div class="rh-card-ts">${(d.timestamp||'').slice(0,16)}</div>
             `;
+            card.querySelector('.rh-card-del').addEventListener('click', e => {
+              e.stopPropagation();
+              _reportHistory.splice(i, 1);
+              if (_activeReportId === d.id) { reportCardDismiss(); }
+              _rebuildHistorySidebar();
+            });
             card.addEventListener('click', () => _renderReportCard(d));
             list.appendChild(card);
           });
@@ -1309,13 +1466,36 @@
           });
         }
 
-        // ── bloomShowReport — called by Bloom Assistant via executeJavaScript ─
+        // ── bloomShowReport — called directly or via bloom-show-report event ─
         window.bloomShowReport = function(defect) {
           if (typeof navigate === 'function') navigate('reporter');
           defect.timestamp = defect.timestamp || new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
           _addToHistory(defect);
           _renderReportCard(defect);
         };
+
+        // Preload dispatches this CustomEvent (crosses contextIsolation boundary)
+        window.addEventListener('bloom-show-report', function(e) {
+          window.bloomShowReport(e.detail);
+        });
+
+        // Restore sent reports from localStorage on page load
+        _rebuildSentReports();
+
+        // Delegated ✕ handler for static demo rows (those without data-bloom-idx)
+        (function() {
+          const tbl = document.getElementById('sent-table-wrap');
+          if (!tbl) return;
+          tbl.addEventListener('click', e => {
+            const td = e.target.closest('.td-remove');
+            if (!td) return;
+            const row = td.closest('tr');
+            if (!row) return;
+            if (row.dataset.bloomIdx !== undefined) return; // handled by _deleteSentReport
+            row.remove();
+            _updateSentCount();
+          });
+        })();
       </script>
 
     </div><!-- /page-reporter -->
