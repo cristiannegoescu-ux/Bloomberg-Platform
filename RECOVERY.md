@@ -12,6 +12,8 @@
 | GitHub repo | https://github.com/cristiannegoescu-ux/Bloomberg-Platform |
 | Reporter Workspace | `C:\Users\cnegoescu\jira-dashboard` — **do not touch** |
 | Reporter Workspace URL | http://localhost (port 80, root path) |
+| Reporter Workspace changelog | `C:\Users\cnegoescu\jira-dashboard\CHANGELOG.md` |
+| Automation Hub | http://10.18.68.179/#automationhub — Internal/External Release Notes + Monthly TSM Reminder (all post via `TEAMS_WEBHOOK_URL` / Graph in `jira-dashboard\backend\.env`) |
 
 ---
 
