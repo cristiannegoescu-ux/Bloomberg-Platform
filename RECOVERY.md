@@ -13,7 +13,7 @@
 | Reporter Workspace | `C:\Users\cnegoescu\jira-dashboard` — **do not touch** |
 | Reporter Workspace URL | http://localhost (port 80, root path) |
 | Reporter Workspace changelog | `C:\Users\cnegoescu\jira-dashboard\CHANGELOG.md` |
-| Automation Hub | http://10.18.68.179/#automationhub — Internal Release Notes (Teams card via the Power Automate flow at `TEAMS_WEBHOOK_URL` in `jira-dashboard\backend\.env`; keep the whole card under ~28 KB or the flow fails with `RequestEntityTooLarge`) and External Release Notes (email via Microsoft Graph) |
+| Automation Hub | http://10.18.68.179/#automationhub — Internal Release Notes (Teams card via the Power Automate flow at `TEAMS_WEBHOOK_URL` in `jira-dashboard\backend\.env`; keep the whole card under ~28 KB or the flow fails with `RequestEntityTooLarge`; the draft is composed from the Jira release Story's "Release Notes" field, falling back to the GitLab release) and External Release Notes (email via Microsoft Graph) |
 | Printer page | http://10.18.68.179/#printer — how to connect to `BUC-PRINT-B4_NORTH` via `\\buc-infr-prn01` |
 
 ---
