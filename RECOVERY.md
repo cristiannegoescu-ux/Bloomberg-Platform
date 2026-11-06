@@ -14,6 +14,8 @@
 | Reporter Workspace URL | http://localhost (port 80, root path) |
 | Reporter Workspace changelog | `C:\Users\cnegoescu\jira-dashboard\CHANGELOG.md` |
 | Automation Hub | http://10.18.68.179/#automationhub — Internal Release Notes (Teams card via the Power Automate flow at `TEAMS_WEBHOOK_URL` in `jira-dashboard\backend\.env`; keep the whole card under ~28 KB or the flow fails with `RequestEntityTooLarge`; the draft is composed from the Jira release Story's "Release Notes" field, falling back to the GitLab release) and External Release Notes (email via Microsoft Graph) |
+| Public Holidays page | http://10.18.68.179/#holidays — RO + Canada holidays (computed in `jira-dashboardrontend\src\holidays.js`, no data to restore) |
+| Header / Milestone extras | Christmas countdown (`HolidayCountdown.jsx`) and seasonal Milestone bar (`SeasonFx.jsx`) are pure frontend; rebuild with `cd frontend && npm run build`, then `pm2 restart jira-dashboard --update-env` |
 | Printer page | http://10.18.68.179/#printer — how to connect to `BUC-PRINT-B4_NORTH` via `\\buc-infr-prn01` |
 
 ---
